@@ -22,6 +22,12 @@ namespace CompoundBox
                 return;
             }
 
+            if (kind == EntityKind.PortalNode)
+            {
+                ConfigurePortalNode();
+                return;
+            }
+
             ConfigureMatter(matter, compound);
         }
 
@@ -90,6 +96,31 @@ namespace CompoundBox
             accent.transform.localRotation = Quaternion.identity;
             accent.transform.localScale = new Vector3(0.18f, 0.18f, 1f);
             accent.sortingOrder = 9;
+        }
+
+        private void ConfigurePortalNode()
+        {
+            shadow.sprite = WhiteboxSprites.Circle;
+            shadow.color = GridPalette.Shadow;
+            shadow.transform.localPosition = new Vector3(-0.04f, -0.06f, 0f);
+            shadow.transform.localScale = new Vector3(0.72f, 0.72f, 1f);
+            shadow.sortingOrder = 7;
+
+            shell.sprite = WhiteboxSprites.Ring;
+            shell.color = GridPalette.Portal('a');
+            shell.transform.localPosition = Vector3.zero;
+            shell.transform.localScale = new Vector3(0.72f, 0.72f, 1f);
+            shell.sortingOrder = 8;
+
+            inner.gameObject.SetActive(true);
+            inner.sprite = WhiteboxSprites.Diamond;
+            inner.color = GridPalette.Portal('a');
+            inner.transform.localPosition = Vector3.zero;
+            inner.transform.localRotation = Quaternion.identity;
+            inner.transform.localScale = new Vector3(0.26f, 0.26f, 1f);
+            inner.sortingOrder = 9;
+
+            accent.gameObject.SetActive(false);
         }
 
         private void EnsureHierarchy()

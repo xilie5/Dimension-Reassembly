@@ -18,6 +18,8 @@ namespace CompoundBox
             var payloadCells = new List<KeyValuePair<Vector2Int, MatterType>>();
             var portalEntries = new Dictionary<char, Vector2Int>();
             var portalExits = new Dictionary<char, Vector2Int>();
+            var portalNodeEntries = new Dictionary<char, int>();
+            var portalNodeExits = new Dictionary<char, int>();
             var advancedLayout = definition.MaterialRows != null && definition.MaterialRows.Length > 0;
 
             for (var row = 0; row < height; row++)
@@ -78,6 +80,25 @@ namespace CompoundBox
                             break;
                         case ' ':
                             break;
+                        case 'p':
+                        case 'P':
+                            state.SetTile(cell, TileKind.Floor);
+                            var portalNode = new GridEntity(
+                                state.NextEntityId++,
+                                EntityKind.PortalNode,
+                                MatterType.None,
+                                new[] { cell });
+                            state.Entities.Add(portalNode);
+                            if (symbol == 'p')
+                            {
+                                portalNodeEntries['p'] = portalNode.Id;
+                            }
+                            else
+                            {
+                                portalNodeExits['p'] = portalNode.Id;
+                            }
+
+                            break;
                         default:
                             if (symbol >= 'a' && symbol <= 'd')
                             {
@@ -108,7 +129,12 @@ namespace CompoundBox
             }
 
             BuildMatterEntities(state, payloadCells, advancedLayout);
-            BuildPortalPairs(state, portalEntries, portalExits);
+            BuildPortalPairs(
+                state,
+                portalEntries,
+                portalExits,
+                portalNodeEntries,
+                portalNodeExits);
             return state;
         }
 
@@ -239,18 +265,82 @@ namespace CompoundBox
         private static void BuildPortalPairs(
             GridBoardState state,
             IReadOnlyDictionary<char, Vector2Int> portalEntries,
-            IReadOnlyDictionary<char, Vector2Int> portalExits)
+            IReadOnlyDictionary<char, Vector2Int> portalExits,
+            IReadOnlyDictionary<char, int> portalNodeEntries,
+            IReadOnlyDictionary<char, int> portalNodeExits)
         {
+            var usedNodeExitKeys = new HashSet<char>();
+            var usedNodeEntryKeys = new HashSet<char>();
+
             foreach (var pair in portalEntries)
             {
-                if (!portalExits.TryGetValue(pair.Key, out var exit))
+                if (portalExits.TryGetValue(pair.Key, out var exit))
                 {
-                    throw new System.InvalidOperationException($"Portal '{pair.Key}' has no uppercase exit.");
+                    state.PortalPairs.Add(new PortalPair(pair.Key, pair.Value, exit));
+                    continue;
                 }
 
-                var portal = new PortalPair(pair.Key, pair.Value, exit);
-                state.Portals[pair.Value] = portal;
+                if (portalNodeExits.Count == 1)
+                {
+                    var nodeExit = default(KeyValuePair<char, int>);
+                    foreach (var candidate in portalNodeExits)
+                    {
+                        nodeExit = candidate;
+                        break;
+                    }
+
+                    usedNodeExitKeys.Add(nodeExit.Key);
+                    state.PortalPairs.Add(new PortalPair(
+                        pair.Key,
+                        pair.Value,
+                        new Vector2Int(-1, -1),
+                        -1,
+                        nodeExit.Value));
+                    continue;
+                }
+
+                throw new System.InvalidOperationException($"Portal '{pair.Key}' has no matching exit.");
             }
+
+            foreach (var pair in portalNodeEntries)
+            {
+                if (portalNodeExits.TryGetValue(pair.Key, out var exitEntityId))
+                {
+                    usedNodeExitKeys.Add(pair.Key);
+                    usedNodeEntryKeys.Add(pair.Key);
+                    state.PortalPairs.Add(new PortalPair(
+                        pair.Key,
+                        new Vector2Int(-1, -1),
+                        new Vector2Int(-1, -1),
+                        pair.Value,
+                        exitEntityId));
+                    continue;
+                }
+
+                if (portalExits.Count == 1)
+                {
+                    var fixedExit = default(KeyValuePair<char, Vector2Int>);
+                    foreach (var candidate in portalExits)
+                    {
+                        fixedExit = candidate;
+                        break;
+                    }
+
+                    usedNodeEntryKeys.Add(pair.Key);
+                    state.PortalPairs.Add(new PortalPair(
+                        pair.Key,
+                        new Vector2Int(-1, -1),
+                        fixedExit.Value,
+                        pair.Value,
+                        -1));
+                    continue;
+                }
+
+                throw new System.InvalidOperationException(
+                    $"Movable portal '{pair.Key}' has no matching exit.");
+            }
+
+            state.RefreshPortals();
         }
     }
 }

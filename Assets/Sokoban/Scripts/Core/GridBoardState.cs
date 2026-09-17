@@ -16,16 +16,53 @@ namespace CompoundBox
 
     public sealed class PortalPair
     {
-        public PortalPair(char id, Vector2Int entry, Vector2Int exit)
+        public PortalPair(
+            char id,
+            Vector2Int entry,
+            Vector2Int exit,
+            int entryEntityId = -1,
+            int exitEntityId = -1)
         {
             Id = id;
-            Entry = entry;
-            Exit = exit;
+            FixedEntry = entry;
+            FixedExit = exit;
+            EntryEntityId = entryEntityId;
+            ExitEntityId = exitEntityId;
         }
 
         public char Id { get; }
-        public Vector2Int Entry { get; }
-        public Vector2Int Exit { get; }
+        public Vector2Int FixedEntry { get; }
+        public Vector2Int FixedExit { get; }
+        public int EntryEntityId { get; }
+        public int ExitEntityId { get; }
+        public Vector2Int Entry => FixedEntry;
+        public Vector2Int Exit => FixedExit;
+
+        public Vector2Int ResolveEntry(GridBoardState state)
+        {
+            return Resolve(state, EntryEntityId, FixedEntry);
+        }
+
+        public Vector2Int ResolveExit(GridBoardState state)
+        {
+            return Resolve(state, ExitEntityId, FixedExit);
+        }
+
+        public PortalPair Clone()
+        {
+            return new PortalPair(Id, FixedEntry, FixedExit, EntryEntityId, ExitEntityId);
+        }
+
+        private static Vector2Int Resolve(GridBoardState state, int entityId, Vector2Int fallback)
+        {
+            if (entityId < 0)
+            {
+                return fallback;
+            }
+
+            var entity = state.GetEntity(entityId);
+            return entity == null ? fallback : entity.Anchor;
+        }
     }
 
     public sealed class GoalDefinition
@@ -58,6 +95,7 @@ namespace CompoundBox
             tiles = new TileKind[width, height];
             Entities = new List<GridEntity>();
             Goals = new List<GoalDefinition>();
+            PortalPairs = new List<PortalPair>();
             Portals = new Dictionary<Vector2Int, PortalPair>();
             Facing = GridDirection.Right;
             PlayerId = -1;
@@ -70,6 +108,7 @@ namespace CompoundBox
         public int Height { get; }
         public List<GridEntity> Entities { get; private set; }
         public List<GoalDefinition> Goals { get; private set; }
+        public List<PortalPair> PortalPairs { get; private set; }
         public Dictionary<Vector2Int, PortalPair> Portals { get; private set; }
         public int PlayerId { get; set; }
         public int NextEntityId { get; set; }
@@ -117,11 +156,12 @@ namespace CompoundBox
                 clone.Goals.Add(Goals[i].Clone());
             }
 
-            foreach (var pair in Portals)
+            for (var i = 0; i < PortalPairs.Count; i++)
             {
-                clone.Portals.Add(pair.Key, new PortalPair(pair.Value.Id, pair.Value.Entry, pair.Value.Exit));
+                clone.PortalPairs.Add(PortalPairs[i].Clone());
             }
 
+            clone.RefreshPortals();
             return clone;
         }
 
@@ -158,9 +198,10 @@ namespace CompoundBox
             }
 
             Portals.Clear();
-            foreach (var pair in source.Portals)
+            PortalPairs.Clear();
+            for (var i = 0; i < source.PortalPairs.Count; i++)
             {
-                Portals.Add(pair.Key, new PortalPair(pair.Value.Id, pair.Value.Entry, pair.Value.Exit));
+                PortalPairs.Add(source.PortalPairs[i].Clone());
             }
 
             PlayerId = source.PlayerId;
@@ -171,6 +212,22 @@ namespace CompoundBox
             MoveCount = source.MoveCount;
             PushCount = source.PushCount;
             ActionCount = source.ActionCount;
+            RefreshPortals();
+        }
+
+        public void RefreshPortals()
+        {
+            Portals.Clear();
+            for (var i = 0; i < PortalPairs.Count; i++)
+            {
+                var pair = PortalPairs[i];
+                var entry = pair.ResolveEntry(this);
+                var exit = pair.ResolveExit(this);
+                if (InBounds(entry) && InBounds(exit))
+                {
+                    Portals[entry] = pair;
+                }
+            }
         }
 
         public bool InBounds(Vector2Int cell)

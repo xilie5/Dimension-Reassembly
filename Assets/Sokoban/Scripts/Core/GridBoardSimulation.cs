@@ -13,6 +13,7 @@ namespace CompoundBox
 
         public static ActionResolution Move(GridBoardState state, GridDirection direction)
         {
+            state.RefreshPortals();
             if (direction == GridDirection.None)
             {
                 return new ActionResolution(false, GridActionType.Move, "No direction supplied.");
@@ -28,6 +29,7 @@ namespace CompoundBox
             state.MoveCount++;
             state.ActionCount++;
             state.PushCount += pushedEntities;
+            state.RefreshPortals();
             return new ActionResolution(
                 true,
                 GridActionType.Move,
@@ -475,6 +477,11 @@ namespace CompoundBox
             }
 
             traversed = false;
+            if (entity.Kind == EntityKind.PortalNode)
+            {
+                return true;
+            }
+
             for (var jumpIndex = 0; jumpIndex < 4; jumpIndex++)
             {
                 PortalPair pair = null;
@@ -491,7 +498,7 @@ namespace CompoundBox
                     return true;
                 }
 
-                var translation = pair.Exit - GetAnchor(proposal);
+                var translation = pair.ResolveExit(state) - GetAnchor(proposal);
                 for (var cellIndex = 0; cellIndex < proposal.Count; cellIndex++)
                 {
                     proposal[cellIndex] += translation;

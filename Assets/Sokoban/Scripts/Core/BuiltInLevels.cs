@@ -233,7 +233,35 @@ namespace CompoundBox
                     "0000000000",
                     "0000000000"
                 },
-                "ERR")
+                "ERR"),
+
+            new LevelDefinition(
+                "portable-gate",
+                "Portable Gate",
+                "Move the exit node before routing the payload through the fixed entry.",
+                new[]
+                {
+                    "###########",
+                    "#.........#",
+                    "#.........#",
+                    "#.......g.#",
+                    "#.@1.a..P.#",
+                    "#.........#",
+                    "#.........#",
+                    "###########"
+                },
+                new[]
+                {
+                    "00000000000",
+                    "00000000000",
+                    "00000000000",
+                    "00000000100",
+                    "00010000000",
+                    "00000000000",
+                    "00000000000",
+                    "00000000000"
+                },
+                "DRRRRRRULDLLLLLURR")
         };
 
         public static IReadOnlyList<LevelDefinition> All => Levels;

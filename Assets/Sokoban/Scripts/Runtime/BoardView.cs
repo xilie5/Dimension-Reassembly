@@ -287,16 +287,17 @@ namespace CompoundBox
         {
             var colour = GridPalette.Portal('a');
             var isExit = false;
-            foreach (var pair in state.Portals.Values)
+            for (var pairIndex = 0; pairIndex < state.PortalPairs.Count; pairIndex++)
             {
+                var pair = state.PortalPairs[pairIndex];
                 colour = GridPalette.Portal(pair.Id);
-                if (pair.Entry == cell)
+                if (pair.ResolveEntry(state) == cell)
                 {
                     isExit = false;
                     break;
                 }
 
-                if (pair.Exit == cell)
+                if (pair.ResolveExit(state) == cell)
                 {
                     isExit = true;
                     break;

@@ -6,7 +6,8 @@ namespace CompoundBox
     public enum EntityKind
     {
         Player,
-        Matter
+        Matter,
+        PortalNode
     }
 
     public sealed class GridEntity
