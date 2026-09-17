@@ -93,6 +93,13 @@ namespace CompoundBox
                 return;
             }
 
+            if (Input.GetKeyDown(KeyCode.L))
+            {
+                hud.ToggleLevelSelect();
+                audioService.Play(AudioCue.Ui);
+                return;
+            }
+
             if (Input.GetKeyDown(KeyCode.LeftBracket))
             {
                 LoadLevel((levelIndex - 1 + levels.Count) % levels.Count);
@@ -223,8 +230,25 @@ namespace CompoundBox
             session = new GridSession(state);
             completeAt = -1f;
             boardView.Rebuild(session.State);
-            hud.SetState(levels[levelIndex], levelIndex, levels.Count, session);
+            hud.SetState(levels[levelIndex], levelIndex, levels.Count, session, SelectLevel);
             levelFlow.Change(LevelFlowState.Playing);
+        }
+
+        private void SelectLevel(int index)
+        {
+            if (index < 0 || index >= levels.Count)
+            {
+                return;
+            }
+
+            if (index >= SaveService.Data.highestUnlockedLevel)
+            {
+                audioService.Play(AudioCue.Blocked);
+                return;
+            }
+
+            LoadLevel(index);
+            audioService.Play(AudioCue.Ui);
         }
 
         private void ApplyResolution(ActionResolution resolution, bool forceVisualRefresh = false)
@@ -345,7 +369,7 @@ namespace CompoundBox
 
         private bool CanAcceptGameplayInput()
         {
-            return levelFlow.CurrentState == LevelFlowState.Playing;
+            return levelFlow.CurrentState == LevelFlowState.Playing && !hud.IsLevelSelectOpen;
         }
 
         private static bool TryReadDirection(out GridDirection direction)

@@ -43,6 +43,13 @@ namespace CompoundBox
                 report.Errors.Add("The level has neither a goal nor an exit.");
             }
 
+            if (definition.MaterialRows != null &&
+                definition.MaterialRows.Length > 0 &&
+                definition.MaterialRows.Length != definition.Rows.Length)
+            {
+                report.Errors.Add("The material layer must contain the same number of rows as the layout.");
+            }
+
             for (var x = 0; x < state.Width; x++)
             {
                 for (var y = 0; y < state.Height; y++)

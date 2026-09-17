@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace CompoundBox
@@ -14,13 +15,28 @@ namespace CompoundBox
         private int levelIndex;
         private int levelCount;
         private GridSession session;
+        private Action<int> levelSelected;
+        private bool levelSelectOpen;
 
-        public void SetState(LevelDefinition definition, int index, int count, GridSession gridSession)
+        public void SetState(
+            LevelDefinition definition,
+            int index,
+            int count,
+            GridSession gridSession,
+            Action<int> selectLevel)
         {
             level = definition;
             levelIndex = index;
             levelCount = count;
             session = gridSession;
+            levelSelected = selectLevel;
+        }
+
+        public bool IsLevelSelectOpen => levelSelectOpen;
+
+        public void ToggleLevelSelect()
+        {
+            levelSelectOpen = !levelSelectOpen;
         }
 
         private void OnGUI()
@@ -53,7 +69,7 @@ namespace CompoundBox
                     : "NO LOCAL RECORD",
                 smallStyle);
 
-            var controls = "WASD  MOVE     X  SPLIT     V  CUT     Q/E  ROTATE     C  FUSE     Z  UNDO     R  RESTART";
+            var controls = "WASD  MOVE     X  SPLIT     V  CUT     Q/E  ROTATE     C  FUSE     L  CHAPTERS     Z  UNDO     R  RESTART";
             DrawPanel(new Rect(22f, Screen.height - 58f, Mathf.Min(Screen.width - 44f, 760f), 36f),
                 new Color(0.055f, 0.075f, 0.105f, 0.9f));
             GUI.Label(new Rect(38f, Screen.height - 53f, 730f, 26f), controls, smallStyle);
@@ -62,6 +78,53 @@ namespace CompoundBox
             {
                 DrawCompletion();
             }
+
+            if (levelSelectOpen)
+            {
+                DrawLevelSelect();
+            }
+        }
+
+        private void DrawLevelSelect()
+        {
+            var width = Mathf.Min(760f, Screen.width - 80f);
+            var height = 330f;
+            var rect = new Rect((Screen.width - width) * 0.5f, (Screen.height - height) * 0.5f, width, height);
+            DrawPanel(rect, new Color(0.045f, 0.065f, 0.09f, 0.98f));
+            GUI.Label(new Rect(rect.x + 24f, rect.y + 20f, rect.width - 48f, 34f), "CHAMBER SELECT", titleStyle);
+
+            var unlocked = Mathf.Clamp(SaveService.Data.highestUnlockedLevel, 1, levelCount);
+            var columns = 4;
+            var buttonWidth = (rect.width - 48f - (columns - 1) * 10f) / columns;
+            const float buttonHeight = 62f;
+            for (var index = 0; index < levelCount; index++)
+            {
+                var row = index / columns;
+                var column = index % columns;
+                var buttonRect = new Rect(
+                    rect.x + 24f + column * (buttonWidth + 10f),
+                    rect.y + 72f + row * (buttonHeight + 10f),
+                    buttonWidth,
+                    buttonHeight);
+
+                var previousEnabled = GUI.enabled;
+                GUI.enabled = index < unlocked;
+                var chapter = ChapterUtility.GetChapterName(index);
+                if (GUI.Button(
+                        buttonRect,
+                        $"{index + 1:00}  {chapter}\n{(index < unlocked ? "READY" : "LOCKED")}"))
+                {
+                    levelSelected?.Invoke(index);
+                    levelSelectOpen = false;
+                }
+
+                GUI.enabled = previousEnabled;
+            }
+
+            GUI.Label(
+                new Rect(rect.x + 24f, rect.yMax - 48f, rect.width - 48f, 24f),
+                "Press L to close. Completing a chamber unlocks the next one.",
+                smallStyle);
         }
 
         private void DrawCompletion()

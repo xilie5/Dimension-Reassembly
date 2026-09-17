@@ -238,5 +238,21 @@ namespace CompoundBox.Tests
             Assert.That(state.ActionCount, Is.EqualTo(originalCount));
             Assert.That(state.Entities.Single(entity => entity.Kind == EntityKind.Matter).Anchor, Is.EqualTo(new Vector2Int(3, 3)));
         }
+
+        [Test]
+        public void LevelAudit_ReportsAllTwelveLevelsAsSolvable()
+        {
+            Assert.That(BuiltInLevels.All.Count, Is.EqualTo(12));
+
+            for (var index = 0; index < BuiltInLevels.All.Count; index++)
+            {
+                var audit = LevelAudit.Analyze(BuiltInLevels.All[index], index);
+
+                Assert.That(audit.Errors, Is.Empty, BuiltInLevels.All[index].Id);
+                Assert.That(audit.IsSolvable, Is.True, BuiltInLevels.All[index].Id);
+                Assert.That(audit.SolutionActionCount, Is.GreaterThan(0));
+                Assert.That(string.IsNullOrWhiteSpace(audit.PrimaryMechanic), Is.False);
+            }
+        }
     }
 }

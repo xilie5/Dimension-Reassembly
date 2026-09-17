@@ -57,13 +57,26 @@ namespace CompoundBox.Editor
             {
                 var level = BuiltInLevels.All[index];
                 var report = LevelValidation.Validate(level);
+                var audit = LevelAudit.Analyze(level, index);
                 using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
                 {
                     EditorGUILayout.LabelField($"{index + 1:00}  {level.DisplayName}", EditorStyles.boldLabel);
                     EditorGUILayout.LabelField(level.Subtitle, EditorStyles.miniLabel);
                     EditorGUILayout.LabelField(
+                        $"{audit.ChapterName} | {audit.Width}x{audit.Height} | " +
+                        $"entities {audit.MatterEntityCount} | goals {audit.GoalCount} | " +
+                        $"solution {audit.SolutionActionCount} | moves {audit.MoveCount} | pushes {audit.PushCount} | " +
+                        $"focus {audit.PrimaryMechanic}",
+                        EditorStyles.miniLabel);
+                    EditorGUILayout.LabelField(
                         report.IsValid ? "VALID" : $"INVALID - {string.Join(" | ", report.Errors)}",
                         EditorStyles.miniLabel);
+                    if (audit.Errors.Count > 0)
+                    {
+                        EditorGUILayout.LabelField(
+                            $"AUDIT - {string.Join(" | ", audit.Errors)}",
+                            EditorStyles.miniLabel);
+                    }
 
                     if (GUILayout.Button("Play This Level"))
                     {
