@@ -49,14 +49,7 @@ namespace CompoundBox
             int levelCount)
         {
             EnsureLoaded();
-            var record = data.GetRecord(levelId);
-            record.completed = true;
-            record.bestMoves = record.bestMoves <= 0 ? moveCount : Mathf.Min(record.bestMoves, moveCount);
-            record.bestPushes = record.bestPushes <= 0 ? pushCount : Mathf.Min(record.bestPushes, pushCount);
-            data.highestUnlockedLevel = Mathf.Clamp(
-                Mathf.Max(data.highestUnlockedLevel, levelIndex + 2),
-                1,
-                Mathf.Max(1, levelCount));
+            data.ApplyCompletion(levelId, levelIndex, moveCount, pushCount, levelCount);
             Save();
         }
 

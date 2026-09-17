@@ -2,7 +2,7 @@
 
 一款使用 Unity 2022.3 LTS 开发的 2D 网格解谜作品集 Demo。核心机制是 **复合实体、拆分、网格传送门、同材质重组**：玩家不只推动一个箱子，而是在不同阶段主动改变物体的形状、位置和组合方式。
 
-![Phase Loom gameplay](Assets/Sokoban/Art/Generated/phase-loom-preview.png)
+![Portable Gate gameplay](Assets/Sokoban/Art/Generated/portfolio-structure.png)
 
 ## 当前内容
 
@@ -91,6 +91,9 @@ Docs                             游戏设计、技术设计和作品集说明
 - [五款重点作品的地图与机制拆解](Docs/ComparativeLevelDesign.md)
 - [可执行升级计划](Docs/UpgradePlan.md)
 - [完整开发执行计划](Docs/ProductionPlan.md)
+- [项目完整实现说明](Docs/ImplementationDeepDive.md)
+- [项目架构说明](Docs/Architecture.md)
+- [S7 内容审查](Docs/ContentAudit.md)
 - [技术设计说明](Docs/TechnicalDesign.md)
 - [作品集展示指南](Docs/PortfolioGuide.md)
 

@@ -486,8 +486,8 @@ namespace CompoundBox
             }
 
             var centre = new Vector3((state.Width - 1) * 0.5f, (state.Height - 1) * 0.5f, -10f);
-            var topInset = Mathf.Clamp(176f / Mathf.Max(1f, Screen.height), 0.1f, 0.22f);
-            var bottomInset = Mathf.Clamp(78f / Mathf.Max(1f, Screen.height), 0.05f, 0.14f);
+            var topInset = Mathf.Clamp(192f / Mathf.Max(1f, Screen.height), 0.11f, 0.23f);
+            var bottomInset = Mathf.Clamp(108f / Mathf.Max(1f, Screen.height), 0.07f, 0.16f);
             var availableVertical = Mathf.Max(0.55f, 1f - topInset - bottomInset);
             var verticalSize = (state.Height * 0.5f + 0.8f) / availableVertical;
             var horizontalSize = (state.Width * 0.5f + 0.8f) / Mathf.Max(0.1f, gameCamera.aspect);

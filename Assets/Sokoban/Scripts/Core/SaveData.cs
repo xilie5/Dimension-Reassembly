@@ -51,5 +51,20 @@ namespace CompoundBox
             record = null;
             return false;
         }
+
+        public void ApplyCompletion(
+            string levelId,
+            int levelIndex,
+            int moveCount,
+            int pushCount,
+            int levelCount)
+        {
+            var record = GetRecord(levelId);
+            record.completed = true;
+            record.bestMoves = record.bestMoves <= 0 ? moveCount : System.Math.Min(record.bestMoves, moveCount);
+            record.bestPushes = record.bestPushes <= 0 ? pushCount : System.Math.Min(record.bestPushes, pushCount);
+            highestUnlockedLevel = System.Math.Max(highestUnlockedLevel, levelIndex + 2);
+            highestUnlockedLevel = System.Math.Max(1, System.Math.Min(highestUnlockedLevel, levelCount));
+        }
     }
 }

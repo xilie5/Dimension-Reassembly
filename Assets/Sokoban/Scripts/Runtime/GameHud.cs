@@ -79,10 +79,10 @@ namespace CompoundBox
 
         private void DrawTopBar()
         {
-            var levelRect = new Rect(28f, 24f, 560f, 126f);
-            var statsRect = new Rect(608f, 24f, 380f, 126f);
-            var archiveRect = new Rect(1008f, 24f, 380f, 126f);
-            var chapterRect = new Rect(1408f, 24f, 484f, 126f);
+            var levelRect = new Rect(28f, 24f, 560f, 140f);
+            var statsRect = new Rect(608f, 24f, 380f, 140f);
+            var archiveRect = new Rect(1008f, 24f, 380f, 140f);
+            var chapterRect = new Rect(1408f, 24f, 484f, 140f);
 
             DrawCard(levelRect, new Color(0.2f, 0.78f, 0.88f, 1f));
             GUI.Label(
@@ -94,9 +94,9 @@ namespace CompoundBox
                 level.DisplayName,
                 titleStyle);
             GUI.Label(
-                new Rect(levelRect.x + 24f, levelRect.y + 88f, levelRect.width - 48f, 28f),
+                new Rect(levelRect.x + 24f, levelRect.y + 88f, levelRect.width - 48f, 38f),
                 level.Subtitle,
-                bodyStyle);
+                smallStyle);
 
             DrawCard(statsRect, new Color(0.36f, 0.56f, 0.95f, 1f));
             GUI.Label(new Rect(statsRect.x + 24f, statsRect.y + 18f, 300f, 28f), "CHAMBER STATUS", smallStyle);
@@ -133,19 +133,23 @@ namespace CompoundBox
             }
 
             var progress = levelCount <= 1 ? 0f : levelIndex / (float)(levelCount - 1);
-            var track = new Rect(28f, 166f, CanvasWidth - 56f, 8f);
+            var track = new Rect(28f, 180f, CanvasWidth - 56f, 8f);
             Fill(track, new Color(0.12f, 0.17f, 0.23f, 0.9f));
             Fill(new Rect(track.x, track.y, track.width * progress, track.height), new Color(0.34f, 0.82f, 0.9f, 1f));
         }
 
         private void DrawBottomBar()
         {
-            var rect = new Rect(28f, 1004f, CanvasWidth - 56f, 52f);
+            var rect = new Rect(28f, 984f, CanvasWidth - 56f, 72f);
             DrawCard(rect, new Color(0.25f, 0.72f, 0.86f, 0.8f));
             GUI.Label(
-                new Rect(rect.x + 22f, rect.y + 12f, rect.width - 44f, 28f),
-                "MOVE  WASD / ARROWS      SPLIT  X      PRECISION CUT  V      ROTATE  Q / E      FUSE  C      CHAPTERS  L      UNDO  Z      RESTART  R",
+                new Rect(rect.x + 22f, rect.y + 8f, rect.width - 44f, 28f),
+                "MOVE  WASD / ARROWS      SPLIT  X      PRECISION CUT  V      ROTATE  Q / E      FUSE  C",
                 bodyStyle);
+            GUI.Label(
+                new Rect(rect.x + 22f, rect.y + 38f, rect.width - 44f, 24f),
+                "UNDO  Z / CTRL+Z      REDO  CTRL+Y / CTRL+SHIFT+Z      RESTART  R      CHAPTERS  L      NEXT  N      MUTE  M",
+                smallStyle);
         }
 
         private void DrawCompletion()

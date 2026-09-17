@@ -48,6 +48,24 @@ namespace CompoundBox.Tests
         }
 
         [Test]
+        public void SaveProgression_UnlocksLevelsAndKeepsBestScores()
+        {
+            var data = new SaveData();
+
+            data.ApplyCompletion("first-push", 0, 12, 4, 12);
+            data.ApplyCompletion("first-push", 0, 15, 7, 12);
+
+            Assert.That(data.highestUnlockedLevel, Is.EqualTo(2));
+            Assert.That(data.TryGetRecord("first-push", out var record), Is.True);
+            Assert.That(record.completed, Is.True);
+            Assert.That(record.bestMoves, Is.EqualTo(12));
+            Assert.That(record.bestPushes, Is.EqualTo(4));
+
+            data.ApplyCompletion("portable-gate", 11, 30, 8, 12);
+            Assert.That(data.highestUnlockedLevel, Is.EqualTo(12));
+        }
+
+        [Test]
         public void StateMachine_TransitionsAndReportsPreviousState()
         {
             var machine = new StateMachine<PlayerActionState>(PlayerActionState.Idle);
