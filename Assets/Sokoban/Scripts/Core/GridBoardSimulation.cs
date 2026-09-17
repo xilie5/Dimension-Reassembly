@@ -5,6 +5,12 @@ namespace CompoundBox
 {
     public static class GridBoardSimulation
     {
+        private sealed class StructureComponent
+        {
+            public readonly List<EntityCellState> Cells = new List<EntityCellState>();
+            public readonly List<EntityConnection> Connections = new List<EntityConnection>();
+        }
+
         public static ActionResolution Move(GridBoardState state, GridDirection direction)
         {
             if (direction == GridDirection.None)
@@ -223,6 +229,125 @@ namespace CompoundBox
                 changed);
         }
 
+        public static ActionResolution PrecisionCutFacingEntity(GridBoardState state)
+        {
+            var offset = GridDirectionUtility.ToOffset(state.Facing);
+            var targetCell = state.Player.Anchor + offset;
+            var entity = state.FindEntityAt(targetCell);
+            if (entity == null || entity.Kind != EntityKind.Matter)
+            {
+                return new ActionResolution(false, GridActionType.PrecisionCut, "No matter is aligned with the cutter.");
+            }
+
+            if (entity.CellStates.Count < 2)
+            {
+                return new ActionResolution(false, GridActionType.PrecisionCut, "A single cell has no connection to cut.");
+            }
+
+            var neighbour = targetCell + offset;
+            if (!entity.HasConnection(targetCell, neighbour))
+            {
+                return new ActionResolution(false, GridActionType.PrecisionCut, "No connection crosses the cutter line.");
+            }
+
+            var remainingConnections = new List<EntityConnection>();
+            for (var i = 0; i < entity.Connections.Count; i++)
+            {
+                var connection = entity.Connections[i];
+                if (!connection.Connects(targetCell, neighbour))
+                {
+                    remainingConnections.Add(connection);
+                }
+            }
+
+            var components = BuildComponents(entity, remainingConnections);
+            if (components.Count < 2)
+            {
+                return new ActionResolution(false, GridActionType.PrecisionCut, "The cut would not separate the compound.");
+            }
+
+            state.Entities.Remove(entity);
+            var changed = new List<int> { entity.Id };
+            for (var componentIndex = 0; componentIndex < components.Count; componentIndex++)
+            {
+                var component = components[componentIndex];
+                var cutEntity = new GridEntity(
+                    state.NextEntityId++,
+                    EntityKind.Matter,
+                    component.Cells,
+                    component.Connections);
+                state.Entities.Add(cutEntity);
+                changed.Add(cutEntity.Id);
+            }
+
+            state.ActionCount++;
+            return new ActionResolution(
+                true,
+                GridActionType.PrecisionCut,
+                "Connection cut and compound separated.",
+                changed);
+        }
+
+        public static ActionResolution RotateFacingEntity(GridBoardState state, bool clockwise)
+        {
+            var offset = GridDirectionUtility.ToOffset(state.Facing);
+            var targetCell = state.Player.Anchor + offset;
+            var entity = state.FindEntityAt(targetCell);
+            if (entity == null || entity.Kind != EntityKind.Matter)
+            {
+                return new ActionResolution(false, GridActionType.Rotate, "No matter is aligned with the rotator.");
+            }
+
+            if (entity.CellStates.Count < 2)
+            {
+                return new ActionResolution(false, GridActionType.Rotate, "A single cell has no orientation.");
+            }
+
+            var anchor = entity.Anchor;
+            var translation = new Dictionary<Vector2Int, Vector2Int>();
+            var rotatedCells = new List<EntityCellState>(entity.CellStates.Count);
+            for (var i = 0; i < entity.CellStates.Count; i++)
+            {
+                var cell = entity.CellStates[i];
+                var relative = cell.Position - anchor;
+                var rotatedRelative = clockwise
+                    ? new Vector2Int(relative.y, -relative.x)
+                    : new Vector2Int(-relative.y, relative.x);
+                var rotatedPosition = anchor + rotatedRelative;
+                if (!state.IsWalkable(rotatedPosition))
+                {
+                    return new ActionResolution(false, GridActionType.Rotate, "Rotation would cross the chamber boundary.");
+                }
+
+                if (IsOccupiedByOtherEntity(state, entity.Id, rotatedPosition))
+                {
+                    return new ActionResolution(false, GridActionType.Rotate, "Rotation space is occupied.");
+                }
+
+                translation[cell.Position] = rotatedPosition;
+                rotatedCells.Add(new EntityCellState(rotatedPosition, cell.Matter));
+            }
+
+            var rotatedConnections = new List<EntityConnection>(entity.Connections.Count);
+            for (var i = 0; i < entity.Connections.Count; i++)
+            {
+                var connection = entity.Connections[i];
+                if (translation.TryGetValue(connection.First, out var first) &&
+                    translation.TryGetValue(connection.Second, out var second))
+                {
+                    rotatedConnections.Add(new EntityConnection(first, second));
+                }
+            }
+
+            entity.ReplaceStructure(rotatedCells, rotatedConnections);
+            state.ActionCount++;
+            return new ActionResolution(
+                true,
+                GridActionType.Rotate,
+                clockwise ? "Compound rotated clockwise." : "Compound rotated counter-clockwise.",
+                new[] { entity.Id });
+        }
+
         private static bool TryMove(
             GridBoardState state,
             Vector2Int offset,
@@ -404,6 +529,90 @@ namespace CompoundBox
                     {
                         return true;
                     }
+                }
+            }
+
+            return false;
+        }
+
+        private static bool IsOccupiedByOtherEntity(GridBoardState state, int entityId, Vector2Int cell)
+        {
+            for (var i = 0; i < state.Entities.Count; i++)
+            {
+                var entity = state.Entities[i];
+                if (entity.Id != entityId && entity.Occupies(cell))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static List<StructureComponent> BuildComponents(
+            GridEntity entity,
+            IReadOnlyList<EntityConnection> availableConnections)
+        {
+            var visited = new HashSet<Vector2Int>();
+            var components = new List<StructureComponent>();
+            for (var cellIndex = 0; cellIndex < entity.CellStates.Count; cellIndex++)
+            {
+                var seed = entity.CellStates[cellIndex];
+                if (!visited.Add(seed.Position))
+                {
+                    continue;
+                }
+
+                var component = new StructureComponent();
+                var queue = new Queue<Vector2Int>();
+                queue.Enqueue(seed.Position);
+                while (queue.Count > 0)
+                {
+                    var position = queue.Dequeue();
+                    if (entity.TryGetCell(position, out var cell))
+                    {
+                        component.Cells.Add(cell.Clone());
+                    }
+
+                    for (var connectionIndex = 0; connectionIndex < availableConnections.Count; connectionIndex++)
+                    {
+                        var connection = availableConnections[connectionIndex];
+                        if (!connection.Contains(position))
+                        {
+                            continue;
+                        }
+
+                        var other = connection.First == position ? connection.Second : connection.First;
+                        if (entity.Occupies(other) && visited.Add(other))
+                        {
+                            queue.Enqueue(other);
+                        }
+                    }
+                }
+
+                for (var connectionIndex = 0; connectionIndex < availableConnections.Count; connectionIndex++)
+                {
+                    var connection = availableConnections[connectionIndex];
+                    if (ContainsCell(component.Cells, connection.First) &&
+                        ContainsCell(component.Cells, connection.Second))
+                    {
+                        component.Connections.Add(connection);
+                    }
+                }
+
+                components.Add(component);
+            }
+
+            return components;
+        }
+
+        private static bool ContainsCell(IReadOnlyList<EntityCellState> cells, Vector2Int position)
+        {
+            for (var i = 0; i < cells.Count; i++)
+            {
+                if (cells[i].Position == position)
+                {
+                    return true;
                 }
             }
 

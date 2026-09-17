@@ -10,21 +10,47 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 66e382d7093132a42b25399efa3dc25f, type: 3}
-  m_Name: 01-first-push
+  m_Name: 09-molecule-socket
   m_EditorClassIdentifier: 
-  levelId: first-push
-  displayName: First Push
-  subtitle: Learn the grid, then deliver the cyan mass.
+  levelId: molecule-socket
+  displayName: Molecule Socket
+  subtitle: The socket checks the whole molecule, not three independent cells.
   layout: '#########
 
     #.......#
 
-    #.@1.x..#
+    #..GG...#
 
-    #..E....#
+    #..G....#
+
+    #.......#
+
+    #.......#
+
+    #.@11...#
+
+    #..1....#
 
     #.......#
 
     #########'
-  materialLayout: 
-  knownSolution: RRLD
+  materialLayout: '000000000
+
+    000000000
+
+    000120000
+
+    000200000
+
+    000000000
+
+    000000000
+
+    000120000
+
+    000200000
+
+    000000000
+
+    000000000'
+  knownSolution: DDRUUUU

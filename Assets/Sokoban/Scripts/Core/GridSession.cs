@@ -45,9 +45,19 @@ namespace CompoundBox
             return ExecuteCommand(new SplitGridCommand());
         }
 
+        public ActionResolution PrecisionCutFacingEntity()
+        {
+            return ExecuteCommand(new PrecisionCutGridCommand());
+        }
+
         public ActionResolution RecombineAdjacentMatter()
         {
             return ExecuteCommand(new RecombineGridCommand());
+        }
+
+        public ActionResolution RotateFacingEntity(bool clockwise)
+        {
+            return ExecuteCommand(new RotateGridCommand(clockwise));
         }
 
         public ActionResolution Undo()
@@ -135,9 +145,21 @@ namespace CompoundBox
                 {
                     resolution = SplitFacingEntity();
                 }
+                else if (code == 'V')
+                {
+                    resolution = PrecisionCutFacingEntity();
+                }
                 else if (code == 'C')
                 {
                     resolution = RecombineAdjacentMatter();
+                }
+                else if (code == 'Q')
+                {
+                    resolution = RotateFacingEntity(false);
+                }
+                else if (code == 'E')
+                {
+                    resolution = RotateFacingEntity(true);
                 }
                 else
                 {

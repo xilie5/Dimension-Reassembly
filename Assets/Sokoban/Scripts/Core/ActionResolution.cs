@@ -6,7 +6,9 @@ namespace CompoundBox
     {
         Move,
         Split,
+        PrecisionCut,
         Recombine,
+        Rotate,
         Undo,
         Redo,
         Restart

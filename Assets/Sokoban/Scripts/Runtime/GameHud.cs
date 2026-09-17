@@ -53,7 +53,7 @@ namespace CompoundBox
                     : "NO LOCAL RECORD",
                 smallStyle);
 
-            var controls = "WASD / ARROWS  MOVE     X  SPLIT     C  RECOMBINE     Z  UNDO     R  RESTART";
+            var controls = "WASD  MOVE     X  SPLIT     V  CUT     Q/E  ROTATE     C  FUSE     Z  UNDO     R  RESTART";
             DrawPanel(new Rect(22f, Screen.height - 58f, Mathf.Min(Screen.width - 44f, 760f), 36f),
                 new Color(0.055f, 0.075f, 0.105f, 0.9f));
             GUI.Label(new Rect(38f, Screen.height - 53f, 730f, 26f), controls, smallStyle);

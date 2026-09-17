@@ -86,6 +86,17 @@ namespace CompoundBox
         }
     }
 
+    public sealed class PrecisionCutGridCommand : GridCommand
+    {
+        public override GridActionType ActionType => GridActionType.PrecisionCut;
+        public override string HistoryLabel => "Precision Cut";
+
+        protected override ActionResolution Apply(GridBoardState state)
+        {
+            return GridBoardSimulation.PrecisionCutFacingEntity(state);
+        }
+    }
+
     public sealed class RecombineGridCommand : GridCommand
     {
         public override GridActionType ActionType => GridActionType.Recombine;
@@ -94,6 +105,24 @@ namespace CompoundBox
         protected override ActionResolution Apply(GridBoardState state)
         {
             return GridBoardSimulation.RecombineAdjacentMatter(state);
+        }
+    }
+
+    public sealed class RotateGridCommand : GridCommand
+    {
+        private readonly bool clockwise;
+
+        public RotateGridCommand(bool clockwise)
+        {
+            this.clockwise = clockwise;
+        }
+
+        public override GridActionType ActionType => GridActionType.Rotate;
+        public override string HistoryLabel => clockwise ? "Rotate CW" : "Rotate CCW";
+
+        protected override ActionResolution Apply(GridBoardState state)
+        {
+            return GridBoardSimulation.RotateFacingEntity(state, clockwise);
         }
     }
 }

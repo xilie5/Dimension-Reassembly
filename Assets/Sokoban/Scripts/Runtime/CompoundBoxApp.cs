@@ -138,6 +138,17 @@ namespace CompoundBox
                 return;
             }
 
+            if (Input.GetKeyDown(KeyCode.V))
+            {
+                if (!CanAcceptGameplayInput())
+                {
+                    return;
+                }
+
+                ApplyResolution(session.PrecisionCutFacingEntity());
+                return;
+            }
+
             if (Input.GetKeyDown(KeyCode.C))
             {
                 if (!CanAcceptGameplayInput())
@@ -146,6 +157,28 @@ namespace CompoundBox
                 }
 
                 ApplyResolution(session.RecombineAdjacentMatter());
+                return;
+            }
+
+            if (Input.GetKeyDown(KeyCode.Q))
+            {
+                if (!CanAcceptGameplayInput())
+                {
+                    return;
+                }
+
+                ApplyResolution(session.RotateFacingEntity(false));
+                return;
+            }
+
+            if (Input.GetKeyDown(KeyCode.E))
+            {
+                if (!CanAcceptGameplayInput())
+                {
+                    return;
+                }
+
+                ApplyResolution(session.RotateFacingEntity(true));
                 return;
             }
 
@@ -200,7 +233,9 @@ namespace CompoundBox
             {
                 if (resolution.ActionType == GridActionType.Move ||
                     resolution.ActionType == GridActionType.Split ||
-                    resolution.ActionType == GridActionType.Recombine)
+                    resolution.ActionType == GridActionType.PrecisionCut ||
+                    resolution.ActionType == GridActionType.Recombine ||
+                    resolution.ActionType == GridActionType.Rotate)
                 {
                     audioService.Play(AudioCue.Blocked);
                 }
@@ -223,7 +258,10 @@ namespace CompoundBox
                     ? PlayerActionState.Interacting
                     : PlayerActionState.Moving);
             }
-            else if (resolution.ActionType == GridActionType.Split || resolution.ActionType == GridActionType.Recombine)
+            else if (resolution.ActionType == GridActionType.Split ||
+                     resolution.ActionType == GridActionType.PrecisionCut ||
+                     resolution.ActionType == GridActionType.Recombine ||
+                     resolution.ActionType == GridActionType.Rotate)
             {
                 playerState.Change(PlayerActionState.Interacting);
             }
@@ -235,8 +273,14 @@ namespace CompoundBox
                 case GridActionType.Split:
                     audioService.Play(AudioCue.Split);
                     break;
+                case GridActionType.PrecisionCut:
+                    audioService.Play(AudioCue.Split);
+                    break;
                 case GridActionType.Recombine:
                     audioService.Play(AudioCue.Recombine);
+                    break;
+                case GridActionType.Rotate:
+                    audioService.Play(AudioCue.Ui);
                     break;
                 case GridActionType.Undo:
                 case GridActionType.Redo:

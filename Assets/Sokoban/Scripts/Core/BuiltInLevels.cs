@@ -95,7 +95,145 @@ namespace CompoundBox
                     "#..........#",
                     "############"
                 },
-                "RRRRSDRRUUDLDLUU")
+                "RRRRSDRRUUDLDLUU"),
+
+            new LevelDefinition(
+                "dual-alloy",
+                "Dual Alloy",
+                "A mixed compound moves as one body, but every cell carries its own material.",
+                new[]
+                {
+                    "#########",
+                    "#..gg...#",
+                    "#.......#",
+                    "#.@11...#",
+                    "#.......#",
+                    "#########"
+                },
+                new[]
+                {
+                    "000000000",
+                    "000120000",
+                    "000000000",
+                    "000120000",
+                    "000000000",
+                    "000000000"
+                },
+                "DRUU"),
+
+            new LevelDefinition(
+                "alloy-split",
+                "Alloy Split",
+                "The splitter preserves each cell's material and turns one body into separate shipments.",
+                new[]
+                {
+                    "###########",
+                    "#..ggg....#",
+                    "#.........#",
+                    "#.@111....#",
+                    "#.........#",
+                    "#.........#",
+                    "###########"
+                },
+                new[]
+                {
+                    "00000000000",
+                    "00012300000",
+                    "00000000000",
+                    "00012300000",
+                    "00000000000",
+                    "00000000000",
+                    "00000000000"
+                },
+                "SDRUUDDRUUDDRUU"),
+
+            new LevelDefinition(
+                "molecule-socket",
+                "Molecule Socket",
+                "The socket checks the whole molecule, not three independent cells.",
+                new[]
+                {
+                    "#########",
+                    "#.......#",
+                    "#..GG...#",
+                    "#..G....#",
+                    "#.......#",
+                    "#.......#",
+                    "#.@11...#",
+                    "#..1....#",
+                    "#.......#",
+                    "#########"
+                },
+                new[]
+                {
+                    "000000000",
+                    "000000000",
+                    "000120000",
+                    "000200000",
+                    "000000000",
+                    "000000000",
+                    "000120000",
+                    "000200000",
+                    "000000000",
+                    "000000000"
+                },
+                "DDRUUUU"),
+
+            new LevelDefinition(
+                "precision-cut",
+                "Precision Cut",
+                "Cut one connection, keep the remaining bond, and deliver two components.",
+                new[]
+                {
+                    "##########",
+                    "#..gGG...#",
+                    "#........#",
+                    "#.@111...#",
+                    "#........#",
+                    "#........#",
+                    "#........#",
+                    "##########"
+                },
+                new[]
+                {
+                    "0000000000",
+                    "0001110000",
+                    "0000000000",
+                    "0001110000",
+                    "0000000000",
+                    "0000000000",
+                    "0000000000",
+                    "0000000000"
+                },
+                "VDRUUDDRUU"),
+
+            new LevelDefinition(
+                "rotation-vault",
+                "Rotation Vault",
+                "Orient the compound before moving it into the socket.",
+                new[]
+                {
+                    "##########",
+                    "#........#",
+                    "#........#",
+                    "#..1.....#",
+                    "#.@11GG..#",
+                    "#....G...#",
+                    "#........#",
+                    "##########"
+                },
+                new[]
+                {
+                    "0000000000",
+                    "0000000000",
+                    "0000000000",
+                    "0001000000",
+                    "0001111000",
+                    "0000010000",
+                    "0000000000",
+                    "0000000000"
+                },
+                "ERR")
         };
 
         public static IReadOnlyList<LevelDefinition> All => Levels;

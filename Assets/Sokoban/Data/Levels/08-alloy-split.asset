@@ -10,24 +10,36 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 66e382d7093132a42b25399efa3dc25f, type: 3}
-  m_Name: 05-reassembly
+  m_Name: 08-alloy-split
   m_EditorClassIdentifier: 
-  levelId: reassembly
-  displayName: Reassembly
-  subtitle: Bring matching matter together before the compound socket can accept
-    it.
+  levelId: alloy-split
+  displayName: Alloy Split
+  subtitle: The splitter preserves each cell's material and turns one body into separate
+    shipments.
   layout: '###########
 
-    #....XX...#
+    #..ggg....#
 
     #.........#
 
-    #.@1...1..#
+    #.@111....#
 
     #.........#
 
     #.........#
 
     ###########'
-  materialLayout: 
-  knownSolution: RURRRRRDLLCULLLDRDRUU
+  materialLayout: '00000000000
+
+    00012300000
+
+    00000000000
+
+    00012300000
+
+    00000000000
+
+    00000000000
+
+    00000000000'
+  knownSolution: SDRUUDDRUUDDRUU
