@@ -320,5 +320,95 @@ namespace CompoundBox
 
             return count;
         }
+
+        public List<string> ValidateInvariants()
+        {
+            var errors = new List<string>();
+            var ids = new HashSet<int>();
+            var occupied = new HashSet<Vector2Int>();
+
+            if (Player == null)
+            {
+                errors.Add("Player entity is missing.");
+            }
+
+            for (var entityIndex = 0; entityIndex < Entities.Count; entityIndex++)
+            {
+                var entity = Entities[entityIndex];
+                if (!ids.Add(entity.Id))
+                {
+                    errors.Add($"Duplicate entity id {entity.Id}.");
+                }
+
+                if (entity.CellStates.Count == 0)
+                {
+                    errors.Add($"Entity {entity.Id} has no cells.");
+                    continue;
+                }
+
+                var positions = new HashSet<Vector2Int>();
+                for (var cellIndex = 0; cellIndex < entity.CellStates.Count; cellIndex++)
+                {
+                    var cell = entity.CellStates[cellIndex];
+                    if (!positions.Add(cell.Position))
+                    {
+                        errors.Add($"Entity {entity.Id} contains duplicate cell {cell.Position}.");
+                    }
+
+                    if (!InBounds(cell.Position) || !IsWalkable(cell.Position))
+                    {
+                        errors.Add($"Entity {entity.Id} occupies invalid cell {cell.Position}.");
+                    }
+
+                    if (!occupied.Add(cell.Position))
+                    {
+                        errors.Add($"Multiple entities occupy cell {cell.Position}.");
+                    }
+
+                    if (entity.Kind == EntityKind.Matter && cell.Matter == MatterType.None)
+                    {
+                        errors.Add($"Matter entity {entity.Id} has an empty cell material.");
+                    }
+                }
+
+                for (var connectionIndex = 0; connectionIndex < entity.Connections.Count; connectionIndex++)
+                {
+                    var connection = entity.Connections[connectionIndex];
+                    if (!positions.Contains(connection.First) || !positions.Contains(connection.Second))
+                    {
+                        errors.Add($"Entity {entity.Id} has an orphan connection.");
+                        continue;
+                    }
+
+                    var delta = connection.First - connection.Second;
+                    if (Mathf.Abs(delta.x) + Mathf.Abs(delta.y) != 1)
+                    {
+                        errors.Add($"Entity {entity.Id} has a non-adjacent connection.");
+                    }
+                }
+            }
+
+            for (var goalIndex = 0; goalIndex < Goals.Count; goalIndex++)
+            {
+                var goal = Goals[goalIndex];
+                if (goal.Matter == MatterType.None || !InBounds(goal.Cell))
+                {
+                    errors.Add($"Goal {goalIndex} is invalid.");
+                }
+            }
+
+            for (var pairIndex = 0; pairIndex < PortalPairs.Count; pairIndex++)
+            {
+                var pair = PortalPairs[pairIndex];
+                var entry = pair.ResolveEntry(this);
+                var exit = pair.ResolveExit(this);
+                if (!InBounds(entry) || !InBounds(exit))
+                {
+                    errors.Add($"Portal pair {pair.Id} resolves outside the board.");
+                }
+            }
+
+            return errors;
+        }
     }
 }

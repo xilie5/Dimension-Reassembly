@@ -77,6 +77,7 @@ namespace CompoundBox
             }
 
             AddBounded(redoCommands, command);
+            ValidateState();
             return new ActionResolution(
                 true,
                 GridActionType.Undo,
@@ -103,6 +104,7 @@ namespace CompoundBox
             }
 
             AddBounded(undoCommands, command);
+            ValidateState();
             return new ActionResolution(
                 true,
                 GridActionType.Redo,
@@ -117,6 +119,7 @@ namespace CompoundBox
             State.RestoreFrom(initialState);
             undoCommands.Clear();
             redoCommands.Clear();
+            ValidateState();
             return new ActionResolution(true, GridActionType.Restart, "Level restarted.");
         }
 
@@ -194,7 +197,20 @@ namespace CompoundBox
 
             AddBounded(undoCommands, command);
             redoCommands.Clear();
+            ValidateState();
             return result;
+        }
+
+        private void ValidateState()
+        {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            var errors = State.ValidateInvariants();
+            if (errors.Count > 0)
+            {
+                throw new System.InvalidOperationException(
+                    "Grid invariant failure: " + string.Join(" | ", errors));
+            }
+#endif
         }
 
         private static void AddBounded(List<IGridCommand> commands, IGridCommand command)

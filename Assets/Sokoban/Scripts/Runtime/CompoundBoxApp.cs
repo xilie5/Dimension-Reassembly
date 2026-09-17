@@ -119,16 +119,28 @@ namespace CompoundBox
                 return;
             }
 
-            if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) &&
-                Input.GetKeyDown(KeyCode.Z))
+            var controlHeld =
+                Input.GetKey(KeyCode.LeftControl) ||
+                Input.GetKey(KeyCode.RightControl);
+            var shiftHeld =
+                Input.GetKey(KeyCode.LeftShift) ||
+                Input.GetKey(KeyCode.RightShift);
+
+            if (Input.GetKeyDown(KeyCode.Z) && !controlHeld && !shiftHeld)
             {
                 ApplyResolution(session.Undo(), true);
                 return;
             }
 
-            if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) &&
+            if (controlHeld && !shiftHeld && Input.GetKeyDown(KeyCode.Z))
+            {
+                ApplyResolution(session.Undo(), true);
+                return;
+            }
+
+            if (controlHeld &&
                 (Input.GetKeyDown(KeyCode.Y) ||
-                 (Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.Z))))
+                 (shiftHeld && Input.GetKeyDown(KeyCode.Z))))
             {
                 ApplyResolution(session.Redo(), true);
                 return;
