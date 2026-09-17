@@ -5,12 +5,18 @@ namespace CompoundBox
 {
     public sealed class GameHud : MonoBehaviour
     {
+        private const float CanvasWidth = 1920f;
+        private const float CanvasHeight = 1080f;
+
         private GUIStyle titleStyle;
+        private GUIStyle headingStyle;
         private GUIStyle bodyStyle;
         private GUIStyle smallStyle;
         private GUIStyle centreStyle;
         private GUIStyle completeStyle;
+        private GUIStyle chapterButtonStyle;
         private bool stylesReady;
+
         private LevelDefinition level;
         private int levelIndex;
         private int levelCount;
@@ -47,32 +53,16 @@ namespace CompoundBox
             }
 
             EnsureStyles();
-            DrawPanel(new Rect(22f, 20f, 440f, 96f), new Color(0.055f, 0.075f, 0.105f, 0.94f));
-            GUI.Label(new Rect(42f, 34f, 300f, 30f), $"{levelIndex + 1:00}  {level.DisplayName}", titleStyle);
-            GUI.Label(new Rect(42f, 68f, 390f, 28f), level.Subtitle, smallStyle);
-            GUI.Label(
-                new Rect(488f, 34f, 280f, 26f),
-                $"GOALS  {session.State.SatisfiedGoalCount():00}/{session.State.Goals.Count:00}",
-                bodyStyle);
-            GUI.Label(
-                new Rect(488f, 66f, 280f, 26f),
-                $"MOVES  {session.State.MoveCount:000}   PUSHES  {session.State.PushCount:000}",
-                smallStyle);
-            GUI.Label(
-                new Rect(792f, 34f, 240f, 26f),
-                $"ARCHIVE  {SaveService.Data.highestUnlockedLevel:00}/{levelCount:00}",
-                bodyStyle);
-            GUI.Label(
-                new Rect(792f, 66f, 300f, 26f),
-                SaveService.Data.TryGetRecord(level.Id, out var progress) && progress.completed
-                    ? $"LOCAL RECORD  {progress.bestMoves:000}/{progress.bestPushes:000}"
-                    : "NO LOCAL RECORD",
-                smallStyle);
+            var scale = Mathf.Min(Screen.width / CanvasWidth, Screen.height / CanvasHeight);
+            var offset = new Vector3(
+                (Screen.width - CanvasWidth * scale) * 0.5f,
+                (Screen.height - CanvasHeight * scale) * 0.5f,
+                0f);
+            var previousMatrix = GUI.matrix;
+            GUI.matrix = Matrix4x4.TRS(offset, Quaternion.identity, Vector3.one * scale);
 
-            var controls = "WASD  MOVE     X  SPLIT     V  CUT     Q/E  ROTATE     C  FUSE     L  CHAPTERS     Z  UNDO     R  RESTART";
-            DrawPanel(new Rect(22f, Screen.height - 58f, Mathf.Min(Screen.width - 44f, 760f), 36f),
-                new Color(0.055f, 0.075f, 0.105f, 0.9f));
-            GUI.Label(new Rect(38f, Screen.height - 53f, 730f, 26f), controls, smallStyle);
+            DrawTopBar();
+            DrawBottomBar();
 
             if (session.State.IsSolved())
             {
@@ -83,36 +73,137 @@ namespace CompoundBox
             {
                 DrawLevelSelect();
             }
+
+            GUI.matrix = previousMatrix;
+        }
+
+        private void DrawTopBar()
+        {
+            var levelRect = new Rect(28f, 24f, 560f, 126f);
+            var statsRect = new Rect(608f, 24f, 380f, 126f);
+            var archiveRect = new Rect(1008f, 24f, 380f, 126f);
+            var chapterRect = new Rect(1408f, 24f, 484f, 126f);
+
+            DrawCard(levelRect, new Color(0.2f, 0.78f, 0.88f, 1f));
+            GUI.Label(
+                new Rect(levelRect.x + 24f, levelRect.y + 16f, levelRect.width - 48f, 24f),
+                $"CHAPTER {levelIndex + 1:00}  /  {ChapterUtility.GetChapterName(levelIndex).ToUpperInvariant()}",
+                smallStyle);
+            GUI.Label(
+                new Rect(levelRect.x + 24f, levelRect.y + 42f, levelRect.width - 48f, 42f),
+                level.DisplayName,
+                titleStyle);
+            GUI.Label(
+                new Rect(levelRect.x + 24f, levelRect.y + 88f, levelRect.width - 48f, 28f),
+                level.Subtitle,
+                bodyStyle);
+
+            DrawCard(statsRect, new Color(0.36f, 0.56f, 0.95f, 1f));
+            GUI.Label(new Rect(statsRect.x + 24f, statsRect.y + 18f, 300f, 28f), "CHAMBER STATUS", smallStyle);
+            GUI.Label(
+                new Rect(statsRect.x + 24f, statsRect.y + 48f, 330f, 34f),
+                $"GOALS  {session.State.SatisfiedGoalCount():00} / {session.State.Goals.Count:00}",
+                headingStyle);
+            GUI.Label(
+                new Rect(statsRect.x + 24f, statsRect.y + 86f, 330f, 28f),
+                $"MOVES  {session.State.MoveCount:000}     PUSHES  {session.State.PushCount:000}",
+                bodyStyle);
+
+            DrawCard(archiveRect, new Color(0.95f, 0.72f, 0.34f, 1f));
+            var unlocked = Mathf.Clamp(SaveService.Data.highestUnlockedLevel, 1, levelCount);
+            GUI.Label(new Rect(archiveRect.x + 24f, archiveRect.y + 18f, 320f, 28f), "LOCAL ARCHIVE", smallStyle);
+            GUI.Label(
+                new Rect(archiveRect.x + 24f, archiveRect.y + 48f, 330f, 34f),
+                $"UNLOCKED  {unlocked:00} / {levelCount:00}",
+                headingStyle);
+            var recordText = SaveService.Data.TryGetRecord(level.Id, out var levelProgress) && levelProgress.completed
+                ? $"BEST  {levelProgress.bestMoves:000} MOVES  /  {levelProgress.bestPushes:000} PUSHES"
+                : "NO COMPLETION RECORD";
+            GUI.Label(
+                new Rect(archiveRect.x + 24f, archiveRect.y + 86f, 330f, 28f),
+                recordText,
+                smallStyle);
+
+            if (GUI.Button(
+                    new Rect(chapterRect.x + 20f, chapterRect.y + 18f, chapterRect.width - 40f, chapterRect.height - 36f),
+                    $"CHAPTER SELECT\n{unlocked:00} CHAMBERS AVAILABLE    [L]",
+                    chapterButtonStyle))
+            {
+                levelSelectOpen = true;
+            }
+
+            var progress = levelCount <= 1 ? 0f : levelIndex / (float)(levelCount - 1);
+            var track = new Rect(28f, 166f, CanvasWidth - 56f, 8f);
+            Fill(track, new Color(0.12f, 0.17f, 0.23f, 0.9f));
+            Fill(new Rect(track.x, track.y, track.width * progress, track.height), new Color(0.34f, 0.82f, 0.9f, 1f));
+        }
+
+        private void DrawBottomBar()
+        {
+            var rect = new Rect(28f, 1004f, CanvasWidth - 56f, 52f);
+            DrawCard(rect, new Color(0.25f, 0.72f, 0.86f, 0.8f));
+            GUI.Label(
+                new Rect(rect.x + 22f, rect.y + 12f, rect.width - 44f, 28f),
+                "MOVE  WASD / ARROWS      SPLIT  X      PRECISION CUT  V      ROTATE  Q / E      FUSE  C      CHAPTERS  L      UNDO  Z      RESTART  R",
+                bodyStyle);
+        }
+
+        private void DrawCompletion()
+        {
+            var rect = new Rect(580f, 388f, 760f, 286f);
+            DrawCard(rect, new Color(0.28f, 0.86f, 0.68f, 1f));
+            GUI.Label(new Rect(rect.x, rect.y + 34f, rect.width, 54f), "CHAMBER STABILIZED", completeStyle);
+            GUI.Label(
+                new Rect(rect.x, rect.y + 102f, rect.width, 34f),
+                "The matter configuration matches the machine specification.",
+                centreStyle);
+            GUI.Label(
+                new Rect(rect.x, rect.y + 154f, rect.width, 30f),
+                $"MOVES  {session.State.MoveCount:000}     PUSHES  {session.State.PushCount:000}",
+                headingStyle);
+            GUI.Label(
+                new Rect(rect.x, rect.y + 220f, rect.width, 28f),
+                levelIndex + 1 < levelCount
+                    ? "Press N for the next chamber."
+                    : "All chambers stabilized. Press N to return to the first.",
+                bodyStyle);
         }
 
         private void DrawLevelSelect()
         {
-            var width = Mathf.Min(760f, Screen.width - 80f);
-            var height = 330f;
-            var rect = new Rect((Screen.width - width) * 0.5f, (Screen.height - height) * 0.5f, width, height);
-            DrawPanel(rect, new Color(0.045f, 0.065f, 0.09f, 0.98f));
-            GUI.Label(new Rect(rect.x + 24f, rect.y + 20f, rect.width - 48f, 34f), "CHAMBER SELECT", titleStyle);
+            var rect = new Rect(300f, 176f, 1320f, 700f);
+            Fill(new Rect(0f, 0f, CanvasWidth, CanvasHeight), new Color(0.02f, 0.03f, 0.05f, 0.72f));
+            DrawCard(rect, new Color(0.3f, 0.78f, 0.9f, 1f));
+            GUI.Label(new Rect(rect.x + 36f, rect.y + 28f, rect.width - 72f, 46f), "CHAMBER SELECT", titleStyle);
+            GUI.Label(
+                new Rect(rect.x + 36f, rect.y + 76f, rect.width - 72f, 28f),
+                "Completed chapters and the next available chamber are unlocked.",
+                bodyStyle);
 
             var unlocked = Mathf.Clamp(SaveService.Data.highestUnlockedLevel, 1, levelCount);
-            var columns = 4;
-            var buttonWidth = (rect.width - 48f - (columns - 1) * 10f) / columns;
-            const float buttonHeight = 62f;
+            const int columns = 4;
+            const float gap = 14f;
+            var startX = rect.x + 36f;
+            var startY = rect.y + 126f;
+            var cardWidth = (rect.width - 72f - (columns - 1) * gap) / columns;
+            const float cardHeight = 138f;
+
             for (var index = 0; index < levelCount; index++)
             {
                 var row = index / columns;
                 var column = index % columns;
-                var buttonRect = new Rect(
-                    rect.x + 24f + column * (buttonWidth + 10f),
-                    rect.y + 72f + row * (buttonHeight + 10f),
-                    buttonWidth,
-                    buttonHeight);
-
+                var card = new Rect(
+                    startX + column * (cardWidth + gap),
+                    startY + row * (cardHeight + gap),
+                    cardWidth,
+                    cardHeight);
+                var available = index < unlocked;
                 var previousEnabled = GUI.enabled;
-                GUI.enabled = index < unlocked;
-                var chapter = ChapterUtility.GetChapterName(index);
-                if (GUI.Button(
-                        buttonRect,
-                        $"{index + 1:00}  {chapter}\n{(index < unlocked ? "READY" : "LOCKED")}"))
+                GUI.enabled = available;
+                var label =
+                    $"{index + 1:00}  {ChapterUtility.GetChapterName(index)}\n" +
+                    $"{(available ? "READY" : "LOCKED")}";
+                if (GUI.Button(card, label, chapterButtonStyle))
                 {
                     levelSelected?.Invoke(index);
                     levelSelectOpen = false;
@@ -122,25 +213,8 @@ namespace CompoundBox
             }
 
             GUI.Label(
-                new Rect(rect.x + 24f, rect.yMax - 48f, rect.width - 48f, 24f),
-                "Press L to close. Completing a chamber unlocks the next one.",
-                smallStyle);
-        }
-
-        private void DrawCompletion()
-        {
-            var width = Mathf.Min(560f, Screen.width - 40f);
-            var height = 180f;
-            var rect = new Rect((Screen.width - width) * 0.5f, (Screen.height - height) * 0.5f, width, height);
-            DrawPanel(rect, new Color(0.05f, 0.07f, 0.1f, 0.98f));
-            GUI.Label(new Rect(rect.x, rect.y + 30f, rect.width, 46f), "PUZZLE COMPLETE", completeStyle);
-            GUI.Label(
-                new Rect(rect.x, rect.y + 86f, rect.width, 28f),
-                "The mass configuration is stable.",
-                centreStyle);
-            GUI.Label(
-                new Rect(rect.x, rect.y + 124f, rect.width, 24f),
-                levelIndex + 1 < levelCount ? "Press N for the next chamber." : "All chambers complete. Press N to loop.",
+                new Rect(rect.x + 36f, rect.yMax - 46f, rect.width - 72f, 26f),
+                "Press L or click a chamber to close.",
                 smallStyle);
         }
 
@@ -152,44 +226,69 @@ namespace CompoundBox
             }
 
             var font = Font.CreateDynamicFontFromOSFont(
-                new[] { "Bahnschrift", "Arial", "Segoe UI" },
-                20);
+                new[] { "Bahnschrift SemiBold", "Bahnschrift", "Arial", "Segoe UI" },
+                24);
 
             titleStyle = new GUIStyle(GUI.skin.label)
             {
                 font = font,
-                fontSize = 22,
+                fontSize = 30,
                 fontStyle = FontStyle.Bold,
-                normal = { textColor = new Color(0.9f, 0.95f, 1f) }
+                alignment = TextAnchor.MiddleLeft,
+                normal = { textColor = new Color(0.96f, 0.98f, 1f) }
+            };
+            headingStyle = new GUIStyle(GUI.skin.label)
+            {
+                font = font,
+                fontSize = 24,
+                fontStyle = FontStyle.Bold,
+                alignment = TextAnchor.MiddleLeft,
+                normal = { textColor = new Color(0.96f, 0.98f, 1f) }
             };
             bodyStyle = new GUIStyle(GUI.skin.label)
             {
                 font = font,
-                fontSize = 17,
-                fontStyle = FontStyle.Bold,
-                normal = { textColor = new Color(0.88f, 0.93f, 1f) }
+                fontSize = 18,
+                alignment = TextAnchor.MiddleLeft,
+                normal = { textColor = new Color(0.72f, 0.82f, 0.92f) }
             };
-            smallStyle = new GUIStyle(GUI.skin.label)
+            smallStyle = new GUIStyle(bodyStyle)
             {
-                font = font,
-                fontSize = 13,
-                normal = { textColor = new Color(0.62f, 0.7f, 0.8f) }
+                fontSize = 16,
+                normal = { textColor = new Color(0.62f, 0.74f, 0.86f) }
             };
-            centreStyle = new GUIStyle(smallStyle)
+            centreStyle = new GUIStyle(bodyStyle)
             {
                 alignment = TextAnchor.MiddleCenter,
-                fontSize = 15
+                fontSize = 18
             };
-            smallStyle.alignment = TextAnchor.MiddleLeft;
             completeStyle = new GUIStyle(titleStyle)
             {
                 alignment = TextAnchor.MiddleCenter,
-                fontSize = 28
+                fontSize = 38
+            };
+            chapterButtonStyle = new GUIStyle(GUI.skin.button)
+            {
+                font = font,
+                fontSize = 20,
+                fontStyle = FontStyle.Bold,
+                alignment = TextAnchor.MiddleCenter,
+                normal = { textColor = new Color(0.92f, 0.97f, 1f) },
+                hover = { textColor = Color.white },
+                active = { textColor = Color.white }
             };
             stylesReady = true;
         }
 
-        private static void DrawPanel(Rect rect, Color colour)
+        private static void DrawCard(Rect rect, Color accent)
+        {
+            Fill(new Rect(rect.x + 3f, rect.y + 4f, rect.width, rect.height), new Color(0f, 0f, 0f, 0.22f));
+            Fill(rect, new Color(0.045f, 0.065f, 0.09f, 0.97f));
+            Fill(new Rect(rect.x, rect.y, rect.width, 5f), accent);
+            Fill(new Rect(rect.x, rect.y, 2f, rect.height), new Color(accent.r, accent.g, accent.b, 0.45f));
+        }
+
+        private static void Fill(Rect rect, Color colour)
         {
             var previous = GUI.color;
             GUI.color = colour;

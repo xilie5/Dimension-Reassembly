@@ -486,10 +486,14 @@ namespace CompoundBox
             }
 
             var centre = new Vector3((state.Width - 1) * 0.5f, (state.Height - 1) * 0.5f, -10f);
-            gameCamera.transform.position = centre;
-            var verticalSize = state.Height * 0.5f + 1.2f;
-            var horizontalSize = (state.Width * 0.5f + 1.2f) / Mathf.Max(0.1f, gameCamera.aspect);
+            var topInset = Mathf.Clamp(176f / Mathf.Max(1f, Screen.height), 0.1f, 0.22f);
+            var bottomInset = Mathf.Clamp(78f / Mathf.Max(1f, Screen.height), 0.05f, 0.14f);
+            var availableVertical = Mathf.Max(0.55f, 1f - topInset - bottomInset);
+            var verticalSize = (state.Height * 0.5f + 0.8f) / availableVertical;
+            var horizontalSize = (state.Width * 0.5f + 0.8f) / Mathf.Max(0.1f, gameCamera.aspect);
             gameCamera.orthographicSize = Mathf.Max(verticalSize, horizontalSize, 4f);
+            var verticalOffset = gameCamera.orthographicSize * (topInset - bottomInset);
+            gameCamera.transform.position = centre + new Vector3(0f, verticalOffset, 0f);
         }
 
         private static Vector3 CellCentre(Vector2Int cell)
