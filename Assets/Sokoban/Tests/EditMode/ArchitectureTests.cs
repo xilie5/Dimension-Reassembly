@@ -211,5 +211,32 @@ namespace CompoundBox.Tests
             Assert.That(state.Goals[1].Matter, Is.EqualTo(MatterType.Amber));
             Assert.That(state.Goals[1].RequiresCompound, Is.True);
         }
+
+        [Test]
+        public void MovePreview_ShowsPlayerAndPushedEntityTargets()
+        {
+            var state = LevelParser.Parse(BuiltInLevels.All[0]);
+
+            var preview = GridBoardSimulation.PreviewMove(state, GridDirection.Right);
+
+            Assert.That(preview.IsValid, Is.True, preview.FailureReason);
+            Assert.That(preview.Entities.Count, Is.EqualTo(2));
+            var playerPreview = preview.Entities.Single(item => item.Kind == EntityKind.Player);
+            Assert.That(playerPreview.TargetCells[0].Position, Is.EqualTo(new Vector2Int(3, 3)));
+        }
+
+        [Test]
+        public void MovePreview_UsesPortalTransitWithoutMutatingState()
+        {
+            var level = BuiltInLevels.All.Single(item => item.Id == "compound-gate");
+            var state = LevelParser.Parse(level);
+            var originalCount = state.ActionCount;
+
+            var preview = GridBoardSimulation.PreviewMove(state, GridDirection.Right);
+
+            Assert.That(preview.IsValid, Is.True, preview.FailureReason);
+            Assert.That(state.ActionCount, Is.EqualTo(originalCount));
+            Assert.That(state.Entities.Single(entity => entity.Kind == EntityKind.Matter).Anchor, Is.EqualTo(new Vector2Int(3, 3)));
+        }
     }
 }

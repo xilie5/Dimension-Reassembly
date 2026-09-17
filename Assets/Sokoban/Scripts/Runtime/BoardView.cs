@@ -21,10 +21,16 @@ namespace CompoundBox
         private readonly List<Coroutine> runningAnimations = new List<Coroutine>();
         private Transform tileRoot;
         private Transform entityRoot;
+        private Transform previewRoot;
         private ObjectPool<Transform> entityRootPool;
         private ObjectPool<EntityCellView> cellViewPool;
+        private ObjectPool<SpriteRenderer> previewCellPool;
+        private readonly List<SpriteRenderer> previewCells = new List<SpriteRenderer>();
         private Camera gameCamera;
         private GridBoardState currentState;
+        private GridBoardState previewState;
+        private GridDirection previewDirection;
+        private int previewActionCount = -1;
         private int builtWidth = -1;
         private int builtHeight = -1;
 
@@ -35,6 +41,8 @@ namespace CompoundBox
             tileRoot.SetParent(transform, false);
             entityRoot = new GameObject("Entities").transform;
             entityRoot.SetParent(transform, false);
+            previewRoot = new GameObject("Move Preview").transform;
+            previewRoot.SetParent(transform, false);
             entityRootPool = new ObjectPool<Transform>(
                 () => new GameObject("Entity Visual").transform,
                 root =>
@@ -61,10 +69,25 @@ namespace CompoundBox
                     view.transform.SetParent(null, false);
                 });
             cellViewPool.Prewarm(32);
+            previewCellPool = new ObjectPool<SpriteRenderer>(
+                () => new GameObject("Preview Cell").AddComponent<SpriteRenderer>(),
+                renderer =>
+                {
+                    renderer.gameObject.SetActive(true);
+                    renderer.transform.localScale = Vector3.one;
+                    renderer.transform.localRotation = Quaternion.identity;
+                },
+                renderer =>
+                {
+                    renderer.gameObject.SetActive(false);
+                    renderer.transform.SetParent(null, false);
+                });
+            previewCellPool.Prewarm(24);
         }
 
         public void SetState(GridBoardState state, ActionResolution resolution)
         {
+            ClearMovePreview();
             currentState = state;
             if (builtWidth != state.Width || builtHeight != state.Height)
             {
@@ -74,6 +97,64 @@ namespace CompoundBox
 
             ReconcileEntities(state, resolution);
             FrameCamera(state);
+        }
+
+        public void ShowMovePreview(GridBoardState state, GridDirection direction)
+        {
+            if (previewState == state &&
+                previewDirection == direction &&
+                previewActionCount == state.ActionCount)
+            {
+                return;
+            }
+
+            ClearMovePreview();
+            if (direction == GridDirection.None)
+            {
+                return;
+            }
+
+            previewState = state;
+            previewDirection = direction;
+            previewActionCount = state.ActionCount;
+
+            var preview = GridBoardSimulation.PreviewMove(state, direction);
+            var invalidColour = new Color(1f, 0.25f, 0.28f, 0.3f);
+            for (var entityIndex = 0; entityIndex < preview.Entities.Count; entityIndex++)
+            {
+                var entityPreview = preview.Entities[entityIndex];
+                for (var cellIndex = 0; cellIndex < entityPreview.TargetCells.Count; cellIndex++)
+                {
+                    var cell = entityPreview.TargetCells[cellIndex];
+                    var renderer = previewCellPool.Get();
+                    renderer.transform.SetParent(previewRoot, false);
+                    renderer.transform.position = CellCentre(cell.Position);
+                    renderer.sprite = entityPreview.Kind == EntityKind.Player
+                        ? WhiteboxSprites.Circle
+                        : WhiteboxSprites.RoundedSquare;
+                    renderer.color = preview.IsValid
+                        ? WithAlpha(GridPalette.Matter(cell.Matter), 0.32f)
+                        : invalidColour;
+                    renderer.sortingOrder = 20 + cellIndex;
+                    renderer.transform.localScale = entityPreview.Kind == EntityKind.Player
+                        ? new Vector3(0.72f, 0.72f, 1f)
+                        : new Vector3(0.78f, 0.78f, 1f);
+                    previewCells.Add(renderer);
+                }
+            }
+        }
+
+        public void ClearMovePreview()
+        {
+            for (var i = 0; i < previewCells.Count; i++)
+            {
+                previewCellPool.Release(previewCells[i]);
+            }
+
+            previewCells.Clear();
+            previewState = null;
+            previewDirection = GridDirection.None;
+            previewActionCount = -1;
         }
 
         public void Rebuild(GridBoardState state)
@@ -413,6 +494,12 @@ namespace CompoundBox
         private static Vector3 CellCentre(Vector2Int cell)
         {
             return new Vector3(cell.x, cell.y, 0f);
+        }
+
+        private static Color WithAlpha(Color colour, float alpha)
+        {
+            colour.a = alpha;
+            return colour;
         }
 
         private IEnumerator PopIn(Transform root)

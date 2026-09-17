@@ -158,6 +158,15 @@ namespace CompoundBox
 
                 ApplyResolution(session.Move(direction));
             }
+
+            if (CanAcceptGameplayInput() && TryReadHeldDirection(out var heldDirection))
+            {
+                boardView.ShowMovePreview(session.State, heldDirection);
+            }
+            else
+            {
+                boardView.ClearMovePreview();
+            }
         }
 
         private void LoadLevelContent()
@@ -316,6 +325,36 @@ namespace CompoundBox
             }
 
             if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
+            {
+                direction = GridDirection.Left;
+                return true;
+            }
+
+            direction = GridDirection.None;
+            return false;
+        }
+
+        private static bool TryReadHeldDirection(out GridDirection direction)
+        {
+            if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))
+            {
+                direction = GridDirection.Up;
+                return true;
+            }
+
+            if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
+            {
+                direction = GridDirection.Right;
+                return true;
+            }
+
+            if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow))
+            {
+                direction = GridDirection.Down;
+                return true;
+            }
+
+            if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
             {
                 direction = GridDirection.Left;
                 return true;

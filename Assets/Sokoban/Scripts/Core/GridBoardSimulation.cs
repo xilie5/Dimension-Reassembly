@@ -31,6 +31,55 @@ namespace CompoundBox
                 pushedEntities);
         }
 
+        public static TransformPreview PreviewMove(GridBoardState state, GridDirection direction)
+        {
+            if (direction == GridDirection.None)
+            {
+                return new TransformPreview(false, "No direction supplied.", false, null);
+            }
+
+            var clonedState = state.Clone();
+            var result = Move(clonedState, direction);
+            var previews = new List<EntityTransformPreview>();
+            if (result.Success)
+            {
+                for (var i = 0; i < result.ChangedEntityIds.Count; i++)
+                {
+                    var entityId = result.ChangedEntityIds[i];
+                    var source = state.GetEntity(entityId);
+                    var target = clonedState.GetEntity(entityId);
+                    if (source == null || target == null)
+                    {
+                        continue;
+                    }
+
+                    previews.Add(new EntityTransformPreview(
+                        entityId,
+                        source.Kind,
+                        source.Cells,
+                        target.CellStates));
+                }
+
+                return new TransformPreview(true, string.Empty, result.UsedPortal, previews);
+            }
+
+            var player = state.Player;
+            var rawTargets = new List<EntityCellState>(player.CellStates.Count);
+            var offset = GridDirectionUtility.ToOffset(direction);
+            for (var i = 0; i < player.CellStates.Count; i++)
+            {
+                var cell = player.CellStates[i];
+                rawTargets.Add(new EntityCellState(cell.Position + offset, cell.Matter));
+            }
+
+            previews.Add(new EntityTransformPreview(
+                player.Id,
+                player.Kind,
+                player.Cells,
+                rawTargets));
+            return new TransformPreview(false, result.Message, false, previews);
+        }
+
         public static ActionResolution SplitFacingEntity(GridBoardState state)
         {
             var target = state.Player.Anchor + GridDirectionUtility.ToOffset(state.Facing);
