@@ -1,3 +1,4 @@
+using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -106,6 +107,109 @@ namespace CompoundBox.Tests
             Assert.That(pool.Get(), Is.SameAs(first));
 
             Object.DestroyImmediate(first.gameObject);
+        }
+
+        [Test]
+        public void AdvancedLayout_BuildsOneMultiMaterialEntity()
+        {
+            var definition = new LevelDefinition(
+                "multi-material",
+                "Multi Material",
+                "Fixture",
+                new[]
+                {
+                    "#######",
+                    "#@11..#",
+                    "#..g..#",
+                    "#######"
+                },
+                new[]
+                {
+                    "0000000",
+                    "0012000",
+                    "0001000",
+                    "0000000"
+                },
+                string.Empty);
+
+            var state = LevelParser.Parse(definition);
+            var entity = state.Entities.Single(item => item.Kind == EntityKind.Matter);
+
+            Assert.That(entity.CellStates.Count, Is.EqualTo(2));
+            Assert.That(entity.GetMatterAt(new Vector2Int(2, 2)), Is.EqualTo(MatterType.Cyan));
+            Assert.That(entity.GetMatterAt(new Vector2Int(3, 2)), Is.EqualTo(MatterType.Amber));
+            Assert.That(entity.HasConnection(new Vector2Int(2, 2), new Vector2Int(3, 2)), Is.True);
+        }
+
+        [Test]
+        public void Movement_PreservesPerCellMaterialAndConnections()
+        {
+            var definition = new LevelDefinition(
+                "multi-material-move",
+                "Multi Material Move",
+                "Fixture",
+                new[]
+                {
+                    "#######",
+                    "#@11..#",
+                    "#.....#",
+                    "#######"
+                },
+                new[]
+                {
+                    "0000000",
+                    "0012000",
+                    "0000000",
+                    "0000000"
+                },
+                string.Empty);
+            var session = new GridSession(LevelParser.Parse(definition));
+            var before = session.State.Entities.Single(entity => entity.Kind == EntityKind.Matter).Clone();
+
+            Assert.That(session.Move(GridDirection.Right).Success, Is.True);
+            var after = session.State.Entities.Single(entity => entity.Kind == EntityKind.Matter);
+
+            Assert.That(after.GetMatterAt(new Vector2Int(3, 2)), Is.EqualTo(MatterType.Cyan));
+            Assert.That(after.GetMatterAt(new Vector2Int(4, 2)), Is.EqualTo(MatterType.Amber));
+            Assert.That(after.HasConnection(new Vector2Int(3, 2), new Vector2Int(4, 2)), Is.True);
+
+            Assert.That(session.Undo().Success, Is.True);
+            var restored = session.State.Entities.Single(entity => entity.Kind == EntityKind.Matter);
+            Assert.That(restored.GetMatterAt(new Vector2Int(2, 2)), Is.EqualTo(before.GetMatterAt(new Vector2Int(2, 2))));
+            Assert.That(restored.GetMatterAt(new Vector2Int(3, 2)), Is.EqualTo(before.GetMatterAt(new Vector2Int(3, 2))));
+            Assert.That(restored.HasConnection(new Vector2Int(2, 2), new Vector2Int(3, 2)), Is.True);
+        }
+
+        [Test]
+        public void GenericGoal_ReadsMaterialFromMaterialLayer()
+        {
+            var definition = new LevelDefinition(
+                "generic-goal",
+                "Generic Goal",
+                "Fixture",
+                new[]
+                {
+                    "#######",
+                    "#@11..#",
+                    "#..gG.#",
+                    "#######"
+                },
+                new[]
+                {
+                    "0000000",
+                    "0012000",
+                    "00012 0",
+                    "0000000"
+                },
+                string.Empty);
+
+            var state = LevelParser.Parse(definition);
+
+            Assert.That(state.Goals.Count, Is.EqualTo(2));
+            Assert.That(state.Goals[0].Matter, Is.EqualTo(MatterType.Cyan));
+            Assert.That(state.Goals[0].RequiresCompound, Is.False);
+            Assert.That(state.Goals[1].Matter, Is.EqualTo(MatterType.Amber));
+            Assert.That(state.Goals[1].RequiresCompound, Is.True);
         }
     }
 }

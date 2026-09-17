@@ -78,5 +78,10 @@ namespace CompoundBox
                     return "Empty";
             }
         }
+
+        public static bool CanBond(MatterType first, MatterType second)
+        {
+            return first != MatterType.None && first == second;
+        }
     }
 }

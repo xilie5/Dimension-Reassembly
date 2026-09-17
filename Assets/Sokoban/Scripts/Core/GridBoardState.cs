@@ -229,7 +229,9 @@ namespace CompoundBox
             {
                 var goal = Goals[i];
                 var entity = FindEntityAt(goal.Cell);
-                if (entity == null || entity.Kind != EntityKind.Matter || entity.Matter != goal.Matter)
+                if (entity == null ||
+                    entity.Kind != EntityKind.Matter ||
+                    entity.GetMatterAt(goal.Cell) != goal.Matter)
                 {
                     return false;
                 }
@@ -250,7 +252,9 @@ namespace CompoundBox
             {
                 var goal = Goals[i];
                 var entity = FindEntityAt(goal.Cell);
-                if (entity != null && entity.Kind == EntityKind.Matter && entity.Matter == goal.Matter &&
+                if (entity != null &&
+                    entity.Kind == EntityKind.Matter &&
+                    entity.GetMatterAt(goal.Cell) == goal.Matter &&
                     (!goal.RequiresCompound || entity.Cells.Count >= 2))
                 {
                     count++;

@@ -13,6 +13,7 @@ namespace CompoundBox
             public MatterType Matter;
             public Transform Root;
             public List<Vector2Int> LocalCells;
+            public List<MatterType> LocalMatter;
             public List<EntityCellView> CellViews;
         }
 
@@ -296,16 +297,19 @@ namespace CompoundBox
                 Matter = entity.Matter,
                 Root = root,
                 LocalCells = new List<Vector2Int>(),
+                LocalMatter = new List<MatterType>(entity.Cells.Count),
                 CellViews = new List<EntityCellView>(entity.Cells.Count)
             };
 
             for (var i = 0; i < entity.Cells.Count; i++)
             {
                 var local = entity.Cells[i] - entity.Anchor;
+                var matter = entity.CellStates[i].Matter;
                 visual.LocalCells.Add(local);
+                visual.LocalMatter.Add(matter);
                 var cellView = cellViewPool.Get();
                 cellView.transform.SetParent(root, false);
-                cellView.Configure(entity.Kind, entity.Matter, entity.Cells.Count > 1, local);
+                cellView.Configure(entity.Kind, matter, entity.Cells.Count > 1, local);
                 visual.CellViews.Add(cellView);
             }
 
@@ -373,14 +377,17 @@ namespace CompoundBox
 
         private static bool Matches(EntityVisual visual, GridEntity entity)
         {
-            if (visual.Kind != entity.Kind || visual.Matter != entity.Matter || visual.LocalCells.Count != entity.Cells.Count)
+            if (visual.Kind != entity.Kind ||
+                visual.LocalCells.Count != entity.Cells.Count ||
+                visual.LocalMatter.Count != entity.CellStates.Count)
             {
                 return false;
             }
 
             for (var i = 0; i < entity.Cells.Count; i++)
             {
-                if (visual.LocalCells[i] != entity.Cells[i] - entity.Anchor)
+                if (visual.LocalCells[i] != entity.Cells[i] - entity.Anchor ||
+                    visual.LocalMatter[i] != entity.CellStates[i].Matter)
                 {
                     return false;
                 }

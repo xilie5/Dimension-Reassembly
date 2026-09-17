@@ -15,7 +15,9 @@ namespace CompoundBox
     [Serializable]
     public sealed class SaveData
     {
-        public int version = 1;
+        public const int CurrentVersion = 2;
+
+        public int version = CurrentVersion;
         public int highestUnlockedLevel = 1;
         public List<LevelProgressRecord> levels = new List<LevelProgressRecord>();
         public bool audioMuted;

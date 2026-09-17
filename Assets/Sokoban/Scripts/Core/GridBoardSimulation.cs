@@ -47,13 +47,12 @@ namespace CompoundBox
 
             var changed = new List<int> { entity.Id };
             state.Entities.Remove(entity);
-            for (var i = 0; i < entity.Cells.Count; i++)
+            for (var i = 0; i < entity.CellStates.Count; i++)
             {
                 var shard = new GridEntity(
                     state.NextEntityId++,
                     EntityKind.Matter,
-                    entity.Matter,
-                    new[] { entity.Cells[i] });
+                    new[] { entity.CellStates[i] });
                 state.Entities.Add(shard);
                 changed.Add(shard.Id);
             }
@@ -81,7 +80,10 @@ namespace CompoundBox
                 {
                     var left = matterEntities[i];
                     var right = matterEntities[j];
-                    if (left.Matter != right.Matter || !AreAdjacent(left, right))
+                    if (!left.IsUniformMatter(out var leftMatter) ||
+                        !right.IsUniformMatter(out var rightMatter) ||
+                        leftMatter != rightMatter ||
+                        !AreAdjacent(left, right))
                     {
                         continue;
                     }
@@ -134,17 +136,32 @@ namespace CompoundBox
             for (var groupIndex = 0; groupIndex < groups.Count; groupIndex++)
             {
                 var group = groups[groupIndex];
-                var matter = group[0].Matter;
-                var cells = new List<Vector2Int>();
+                group[0].IsUniformMatter(out var matter);
+                var cells = new List<EntityCellState>();
+                var entityConnections = new List<EntityConnection>();
                 for (var entityIndex = 0; entityIndex < group.Count; entityIndex++)
                 {
                     var entity = group[entityIndex];
                     changed.Add(entity.Id);
-                    cells.AddRange(entity.Cells);
+                    for (var cellIndex = 0; cellIndex < entity.CellStates.Count; cellIndex++)
+                    {
+                        cells.Add(entity.CellStates[cellIndex]);
+                    }
+
+                    for (var connectionIndex = 0; connectionIndex < entity.Connections.Count; connectionIndex++)
+                    {
+                        entityConnections.Add(entity.Connections[connectionIndex]);
+                    }
+
                     state.Entities.Remove(entity);
                 }
 
-                var merged = new GridEntity(state.NextEntityId++, EntityKind.Matter, matter, cells);
+                var merged = new GridEntity(
+                    state.NextEntityId++,
+                    EntityKind.Matter,
+                    cells,
+                    entityConnections);
+                merged.AddAutoBondConnections();
                 state.Entities.Add(merged);
                 changed.Add(merged.Id);
             }

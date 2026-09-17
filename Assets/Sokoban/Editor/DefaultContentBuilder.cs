@@ -34,6 +34,7 @@ namespace CompoundBox.Editor
                     definition.DisplayName,
                     definition.Subtitle,
                     string.Join("\n", definition.Rows),
+                    definition.MaterialRows == null ? null : string.Join("\n", definition.MaterialRows),
                     definition.KnownSolution);
                 EditorUtility.SetDirty(asset);
                 levelAssets.Add(asset);

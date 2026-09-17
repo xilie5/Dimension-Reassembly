@@ -25,13 +25,13 @@
 
 | ID | 任务 | 状态 | 依赖 |
 | --- | --- | --- | --- |
-| S1-1 | `EntityCellState` | NEXT | S0-1 |
-| S1-2 | `EntityConnection` | NEXT | S0-1 |
-| S1-3 | `GridEntity V2` | NEXT | S1-1, S1-2 |
-| S1-4 | Clone 与 Restore | NEXT | S1-3 |
-| S1-5 | V1 布局兼容转换 | NEXT | S1-3 |
-| S1-6 | 多材质移动测试 | NEXT | S1-5 |
-| S1-7 | 存档 Schema V2 | NEXT | S1-3 |
+| S1-1 | `EntityCellState` | DONE | S0-1 |
+| S1-2 | `EntityConnection` | DONE | S0-1 |
+| S1-3 | `GridEntity V2` | DONE | S1-1, S1-2 |
+| S1-4 | Clone 与 Restore | DONE | S1-3 |
+| S1-5 | V1 布局兼容转换 | DONE | S1-3 |
+| S1-6 | 多材质移动测试 | DONE | S1-5 |
+| S1-7 | 存档 Schema V2 | DONE | S1-3 |
 
 ## S2 - Preview And Editor V2
 

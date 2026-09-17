@@ -103,7 +103,7 @@ namespace CompoundBox
                 saveData.levels = new System.Collections.Generic.List<LevelProgressRecord>();
             }
 
-            saveData.version = 1;
+            saveData.version = SaveData.CurrentVersion;
             return saveData;
         }
     }

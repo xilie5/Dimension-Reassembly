@@ -18,6 +18,7 @@ namespace CompoundBox
             var payloadCells = new List<KeyValuePair<Vector2Int, MatterType>>();
             var portalEntries = new Dictionary<char, Vector2Int>();
             var portalExits = new Dictionary<char, Vector2Int>();
+            var advancedLayout = definition.MaterialRows != null && definition.MaterialRows.Length > 0;
 
             for (var row = 0; row < height; row++)
             {
@@ -29,13 +30,33 @@ namespace CompoundBox
 
                     if (MatterTypeUtility.TryParseBlock(symbol, out var blockMatter))
                     {
+                        blockMatter = GetMaterialOverride(definition, cell, blockMatter, advancedLayout);
                         state.SetTile(cell, TileKind.Floor);
                         payloadCells.Add(new KeyValuePair<Vector2Int, MatterType>(cell, blockMatter));
                         continue;
                     }
 
-                    if (MatterTypeUtility.TryParseGoal(symbol, out var goalMatter, out var requiresCompound))
+                    var isGenericGoal = symbol == 'g' || symbol == 'G';
+                    var goalMatter = MatterType.None;
+                    var requiresCompound = false;
+                    if (isGenericGoal ||
+                        MatterTypeUtility.TryParseGoal(symbol, out goalMatter, out requiresCompound))
                     {
+                        if (isGenericGoal)
+                        {
+                            goalMatter = GetMaterialOverride(definition, cell, MatterType.None, advancedLayout);
+                            requiresCompound = symbol == 'G';
+                            if (goalMatter == MatterType.None)
+                            {
+                                throw new System.InvalidOperationException(
+                                    $"Generic goal '{symbol}' needs a material digit in the material layer.");
+                            }
+                        }
+                        else
+                        {
+                            goalMatter = GetMaterialOverride(definition, cell, goalMatter, advancedLayout);
+                        }
+
                         state.SetTile(cell, TileKind.Goal);
                         state.Goals.Add(new GoalDefinition(cell, goalMatter, requiresCompound));
                         continue;
@@ -86,14 +107,42 @@ namespace CompoundBox
                 }
             }
 
-            BuildMatterEntities(state, payloadCells);
+            BuildMatterEntities(state, payloadCells, advancedLayout);
             BuildPortalPairs(state, portalEntries, portalExits);
             return state;
         }
 
+        private static MatterType GetMaterialOverride(
+            LevelDefinition definition,
+            Vector2Int cell,
+            MatterType fallback,
+            bool advancedLayout)
+        {
+            if (!advancedLayout)
+            {
+                return fallback;
+            }
+
+            var row = definition.Rows.Length - 1 - cell.y;
+            if (row < 0 || row >= definition.MaterialRows.Length)
+            {
+                return fallback;
+            }
+
+            var line = definition.MaterialRows[row];
+            if (cell.x < 0 || cell.x >= line.Length ||
+                !MatterTypeUtility.TryParseBlock(line[cell.x], out var overrideMatter))
+            {
+                return fallback;
+            }
+
+            return overrideMatter;
+        }
+
         private static void BuildMatterEntities(
             GridBoardState state,
-            IReadOnlyList<KeyValuePair<Vector2Int, MatterType>> payloadCells)
+            IReadOnlyList<KeyValuePair<Vector2Int, MatterType>> payloadCells,
+            bool advancedLayout)
         {
             var unvisited = new HashSet<Vector2Int>();
             var matterByCell = new Dictionary<Vector2Int, MatterType>();
@@ -123,13 +172,37 @@ namespace CompoundBox
                 {
                     var cell = queue.Dequeue();
                     component.Add(cell);
-                    TryVisit(cell + Vector2Int.up, matter, unvisited, matterByCell, queue);
-                    TryVisit(cell + Vector2Int.right, matter, unvisited, matterByCell, queue);
-                    TryVisit(cell + Vector2Int.down, matter, unvisited, matterByCell, queue);
-                    TryVisit(cell + Vector2Int.left, matter, unvisited, matterByCell, queue);
+                    if (advancedLayout)
+                    {
+                        TryVisitAdvanced(cell + Vector2Int.up, unvisited, queue);
+                        TryVisitAdvanced(cell + Vector2Int.right, unvisited, queue);
+                        TryVisitAdvanced(cell + Vector2Int.down, unvisited, queue);
+                        TryVisitAdvanced(cell + Vector2Int.left, unvisited, queue);
+                    }
+                    else
+                    {
+                        TryVisit(cell + Vector2Int.up, matter, unvisited, matterByCell, queue);
+                        TryVisit(cell + Vector2Int.right, matter, unvisited, matterByCell, queue);
+                        TryVisit(cell + Vector2Int.down, matter, unvisited, matterByCell, queue);
+                        TryVisit(cell + Vector2Int.left, matter, unvisited, matterByCell, queue);
+                    }
                 }
 
-                state.Entities.Add(new GridEntity(state.NextEntityId++, EntityKind.Matter, matter, component));
+                if (advancedLayout)
+                {
+                    var cells = new List<EntityCellState>(component.Count);
+                    for (var cellIndex = 0; cellIndex < component.Count; cellIndex++)
+                    {
+                        var cell = component[cellIndex];
+                        cells.Add(new EntityCellState(cell, matterByCell[cell]));
+                    }
+
+                    state.Entities.Add(new GridEntity(state.NextEntityId++, EntityKind.Matter, cells));
+                }
+                else
+                {
+                    state.Entities.Add(new GridEntity(state.NextEntityId++, EntityKind.Matter, matter, component));
+                }
             }
         }
 
@@ -141,6 +214,20 @@ namespace CompoundBox
             Queue<Vector2Int> queue)
         {
             if (!unvisited.Contains(candidate) || matterByCell[candidate] != matter)
+            {
+                return;
+            }
+
+            unvisited.Remove(candidate);
+            queue.Enqueue(candidate);
+        }
+
+        private static void TryVisitAdvanced(
+            Vector2Int candidate,
+            HashSet<Vector2Int> unvisited,
+            Queue<Vector2Int> queue)
+        {
+            if (!unvisited.Contains(candidate))
             {
                 return;
             }
