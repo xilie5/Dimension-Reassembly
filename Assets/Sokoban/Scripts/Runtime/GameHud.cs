@@ -22,7 +22,11 @@ namespace CompoundBox
         private int levelCount;
         private GridSession session;
         private Action<int> levelSelected;
+        private Action continueAction;
+        private Action newGameAction;
         private bool levelSelectOpen;
+        private ArtThemeAsset theme;
+        private bool mainMenuOpen;
 
         public void SetState(
             LevelDefinition definition,
@@ -39,6 +43,24 @@ namespace CompoundBox
         }
 
         public bool IsLevelSelectOpen => levelSelectOpen;
+        public bool IsMainMenuOpen => mainMenuOpen;
+
+        public void SetMainMenuCallbacks(Action onContinue, Action onNewGame)
+        {
+            continueAction = onContinue;
+            newGameAction = onNewGame;
+        }
+
+        public void SetMainMenuVisible(bool visible)
+        {
+            mainMenuOpen = visible;
+        }
+
+        public void SetTheme(ArtThemeAsset artTheme)
+        {
+            theme = artTheme;
+            stylesReady = false;
+        }
 
         public void ToggleLevelSelect()
         {
@@ -61,12 +83,19 @@ namespace CompoundBox
             var previousMatrix = GUI.matrix;
             GUI.matrix = Matrix4x4.TRS(offset, Quaternion.identity, Vector3.one * scale);
 
-            DrawTopBar();
-            DrawBottomBar();
-
-            if (session.State.IsSolved())
+            if (mainMenuOpen)
             {
-                DrawCompletion();
+                DrawMainMenu();
+            }
+            else
+            {
+                DrawTopBar();
+                DrawBottomBar();
+
+                if (session.State.IsSolved())
+                {
+                    DrawCompletion();
+                }
             }
 
             if (levelSelectOpen)
@@ -75,6 +104,43 @@ namespace CompoundBox
             }
 
             GUI.matrix = previousMatrix;
+        }
+
+        private void DrawMainMenu()
+        {
+            Fill(new Rect(0f, 0f, CanvasWidth, CanvasHeight), new Color(0.02f, 0.03f, 0.05f, 0.94f));
+            var panel = new Rect(560f, 220f, 800f, 600f);
+            DrawCard(panel, new Color(0.3f, 0.82f, 0.9f, 1f));
+            GUI.Label(new Rect(panel.x, panel.y + 42f, panel.width, 56f), "COMPOUND BOX", completeStyle);
+            GUI.Label(
+                new Rect(panel.x, panel.y + 104f, panel.width, 30f),
+                "PHASE FOUNDRY  /  MATTER ENGINEERING",
+                centreStyle);
+
+            var button = new Rect(panel.x + 180f, panel.y + 190f, panel.width - 360f, 64f);
+            if (GUI.Button(button, "CONTINUE", chapterButtonStyle))
+            {
+                mainMenuOpen = false;
+                continueAction?.Invoke();
+            }
+
+            button.y += 82f;
+            if (GUI.Button(button, "CHAPTER SELECT", chapterButtonStyle))
+            {
+                levelSelectOpen = true;
+            }
+
+            button.y += 82f;
+            if (GUI.Button(button, "NEW GAME", chapterButtonStyle))
+            {
+                mainMenuOpen = false;
+                newGameAction?.Invoke();
+            }
+
+            GUI.Label(
+                new Rect(panel.x, panel.yMax - 52f, panel.width, 28f),
+                "WASD MOVE  /  X SPLIT  /  V CUT  /  Q E ROTATE  /  C FUSE  /  L CHAPTERS",
+                centreStyle);
         }
 
         private void DrawTopBar()
@@ -281,6 +347,15 @@ namespace CompoundBox
                 hover = { textColor = Color.white },
                 active = { textColor = Color.white }
             };
+            if (theme != null)
+            {
+                chapterButtonStyle.normal.background = theme.ButtonTexture;
+                chapterButtonStyle.hover.background =
+                    theme.ButtonHoverTexture != null ? theme.ButtonHoverTexture : theme.ButtonTexture;
+                chapterButtonStyle.active.background =
+                    theme.ButtonHoverTexture != null ? theme.ButtonHoverTexture : theme.ButtonTexture;
+            }
+
             stylesReady = true;
         }
 

@@ -3,6 +3,7 @@ namespace CompoundBox
     public enum LevelFlowState
     {
         Loading,
+        MainMenu,
         Playing,
         Completed
     }

@@ -38,3 +38,6 @@ sysinfo.txt
 *.ipa
 
 crashlytics-build.properties
+
+# Local asset download cache
+Tools/Cache/

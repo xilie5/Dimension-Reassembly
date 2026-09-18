@@ -10,6 +10,16 @@ namespace CompoundBox
 
         public IReadOnlyList<LevelDefinitionAsset> LevelAssets => levels;
 
+        public void AddLevelAsset(LevelDefinitionAsset levelAsset)
+        {
+            if (levelAsset == null || levels.Contains(levelAsset))
+            {
+                return;
+            }
+
+            levels.Add(levelAsset);
+        }
+
         public List<LevelDefinition> ToDefinitions()
         {
             var definitions = new List<LevelDefinition>(levels.Count);

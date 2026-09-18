@@ -39,7 +39,7 @@ namespace CompoundBox
         private void ConfigureMatter(MatterType matter, bool compound)
         {
             shadow.sprite = WhiteboxSprites.RoundedSquare;
-            shadow.color = GridPalette.Shadow;
+            shadow.color = GridPalette.ShadowColour;
             shadow.transform.localPosition = new Vector3(-0.045f, -0.06f, 0f);
             shadow.transform.localScale = new Vector3(0.82f, 0.82f, 1f);
             shadow.sortingOrder = 5;
@@ -70,7 +70,7 @@ namespace CompoundBox
         private void ConfigurePlayer()
         {
             shadow.sprite = WhiteboxSprites.Circle;
-            shadow.color = GridPalette.Shadow;
+            shadow.color = GridPalette.ShadowColour;
             shadow.transform.localPosition = new Vector3(-0.045f, -0.07f, 0f);
             shadow.transform.localScale = new Vector3(0.76f, 0.76f, 1f);
             shadow.sortingOrder = 6;
@@ -101,7 +101,7 @@ namespace CompoundBox
         private void ConfigurePortalNode()
         {
             shadow.sprite = WhiteboxSprites.Circle;
-            shadow.color = GridPalette.Shadow;
+            shadow.color = GridPalette.ShadowColour;
             shadow.transform.localPosition = new Vector3(-0.04f, -0.06f, 0f);
             shadow.transform.localScale = new Vector3(0.72f, 0.72f, 1f);
             shadow.sortingOrder = 7;

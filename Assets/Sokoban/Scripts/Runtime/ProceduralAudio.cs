@@ -39,6 +39,34 @@ namespace CompoundBox
 
         public bool Muted { get; set; }
 
+        public void ConfigureTheme(ArtThemeAsset theme)
+        {
+            if (theme == null)
+            {
+                return;
+            }
+
+            if (theme.UiClick != null)
+            {
+                clips[AudioCue.Ui] = theme.UiClick;
+            }
+
+            if (theme.UiConfirm != null)
+            {
+                clips[AudioCue.Complete] = theme.UiConfirm;
+            }
+
+            if (theme.UiError != null)
+            {
+                clips[AudioCue.Blocked] = theme.UiError;
+            }
+
+            if (theme.UiToggle != null)
+            {
+                clips[AudioCue.Recombine] = theme.UiToggle;
+            }
+        }
+
         public void Play(AudioCue cue)
         {
             if (Muted || !clips.TryGetValue(cue, out var clip))

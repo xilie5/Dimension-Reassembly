@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -45,6 +46,18 @@ namespace CompoundBox.Editor
             {
                 catalog = ScriptableObject.CreateInstance<LevelCatalogAsset>();
                 AssetDatabase.CreateAsset(catalog, CatalogPath);
+            }
+
+            if (catalog.LevelAssets.Count > 0)
+            {
+                var builtInIds = new HashSet<string>(levelAssets.Select(asset => asset.LevelId));
+                foreach (var customAsset in catalog.LevelAssets)
+                {
+                    if (customAsset != null && !builtInIds.Contains(customAsset.LevelId))
+                    {
+                        levelAssets.Add(customAsset);
+                    }
+                }
             }
 
             catalog.SetLevels(levelAssets);

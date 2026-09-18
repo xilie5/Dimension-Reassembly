@@ -9,6 +9,7 @@ namespace CompoundBox
         public static int RequestedStartLevel { get; set; }
 
         [SerializeField] private LevelCatalogAsset levelCatalog;
+        [SerializeField] private ArtThemeAsset artTheme;
 
         private readonly List<LevelDefinition> levels = new List<LevelDefinition>();
         private readonly LevelFlowStateMachine levelFlow = new LevelFlowStateMachine();
@@ -36,6 +37,10 @@ namespace CompoundBox
         private void Awake()
         {
             Application.targetFrameRate = 120;
+            artTheme = artTheme != null
+                ? artTheme
+                : Resources.Load<ArtThemeAsset>("Art/FoundryTheme");
+            GridPalette.Theme = artTheme;
             LoadLevelContent();
             SaveService.EnsureLoaded();
 
@@ -61,14 +66,19 @@ namespace CompoundBox
             var hudObject = new GameObject("HUD");
             hudObject.transform.SetParent(transform, false);
             hud = hudObject.AddComponent<GameHud>();
+            hud.SetTheme(artTheme);
 
             audioService = new ProceduralAudio(gameObject);
+            audioService.ConfigureTheme(artTheme);
             audioService.Muted = SaveService.Data.audioMuted;
             var startLevel = RequestedStartLevel >= 0
                 ? RequestedStartLevel
                 : SaveService.Data.highestUnlockedLevel - 1;
             RequestedStartLevel = -1;
             LoadLevel(Mathf.Clamp(startLevel, 0, levels.Count - 1));
+            hud.SetMainMenuCallbacks(ContinueFromMenu, StartNewGame);
+            hud.SetMainMenuVisible(true);
+            levelFlow.Change(LevelFlowState.MainMenu);
         }
 
         private void Update()
@@ -85,6 +95,21 @@ namespace CompoundBox
                 audioService.Muted = !audioService.Muted;
                 SaveService.SetAudioMuted(audioService.Muted);
                 audioService.Play(AudioCue.Ui);
+            }
+
+            if (hud.IsMainMenuOpen)
+            {
+                if (Input.GetKeyDown(KeyCode.L))
+                {
+                    hud.ToggleLevelSelect();
+                }
+
+                if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space))
+                {
+                    ContinueFromMenu();
+                }
+
+                return;
             }
 
             if (Input.GetKeyDown(KeyCode.N) || Input.GetKeyDown(KeyCode.Tab))
@@ -260,6 +285,24 @@ namespace CompoundBox
             }
 
             LoadLevel(index);
+            levelFlow.Change(LevelFlowState.Playing);
+            hud.SetMainMenuVisible(false);
+            audioService.Play(AudioCue.Ui);
+        }
+
+        private void ContinueFromMenu()
+        {
+            levelFlow.Change(LevelFlowState.Playing);
+            hud.SetMainMenuVisible(false);
+            audioService.Play(AudioCue.Ui);
+        }
+
+        private void StartNewGame()
+        {
+            SaveService.Reset();
+            LoadLevel(0);
+            levelFlow.Change(LevelFlowState.Playing);
+            hud.SetMainMenuVisible(false);
             audioService.Play(AudioCue.Ui);
         }
 
@@ -381,7 +424,9 @@ namespace CompoundBox
 
         private bool CanAcceptGameplayInput()
         {
-            return levelFlow.CurrentState == LevelFlowState.Playing && !hud.IsLevelSelectOpen;
+            return levelFlow.CurrentState == LevelFlowState.Playing &&
+                   !hud.IsLevelSelectOpen &&
+                   !hud.IsMainMenuOpen;
         }
 
         private static bool TryReadDirection(out GridDirection direction)
