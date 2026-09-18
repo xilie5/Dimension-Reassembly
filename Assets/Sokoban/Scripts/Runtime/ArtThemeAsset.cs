@@ -114,7 +114,10 @@ namespace CompoundBox
             AudioClip click,
             AudioClip confirm,
             AudioClip error,
-            AudioClip toggle)
+            AudioClip toggle,
+            Sprite floorTileSprite = null,
+            Sprite wallTileSprite = null,
+            Sprite matterTileSprite = null)
         {
             themeId = id;
             background = backgroundColour;
@@ -140,6 +143,9 @@ namespace CompoundBox
             uiConfirm = confirm;
             uiError = error;
             uiToggle = toggle;
+            floorSprite = floorTileSprite;
+            wallSprite = wallTileSprite;
+            matterSprite = matterTileSprite;
         }
     }
 }

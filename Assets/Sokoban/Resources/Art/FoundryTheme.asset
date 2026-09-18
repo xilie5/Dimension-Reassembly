@@ -37,6 +37,13 @@ MonoBehaviour:
   iconRedo: {fileID: 21300000, guid: 6501077abbaa61d46b02720f499706c1, type: 3}
   iconAudioOn: {fileID: 21300000, guid: 23109759e47a5b74a9187b851b857346, type: 3}
   iconAudioOff: {fileID: 21300000, guid: 545a91cb22c0a184fbe78451e3b16fe3, type: 3}
+  floorSprite: {fileID: 0}
+  wallSprite: {fileID: 0}
+  goalSprite: {fileID: 0}
+  exitSprite: {fileID: 0}
+  portalSprite: {fileID: 0}
+  playerSprite: {fileID: 0}
+  matterSprite: {fileID: 0}
   uiClick: {fileID: 8300000, guid: fdadb609fa3aaf046a5bdd4c3f7188ae, type: 3}
   uiConfirm: {fileID: 8300000, guid: 100cc4566ae10774ebfd73d3d12223ad, type: 3}
   uiError: {fileID: 8300000, guid: 5144603dcaf4a084a9677888ccf8c0a4, type: 3}

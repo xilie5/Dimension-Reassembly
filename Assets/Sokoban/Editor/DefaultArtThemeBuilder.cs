@@ -67,7 +67,10 @@ namespace CompoundBox.Editor
                 click,
                 confirm,
                 error,
-                toggle);
+                toggle,
+                null,
+                null,
+                null);
 
             EditorUtility.SetDirty(theme);
             AssetDatabase.SaveAssets();
