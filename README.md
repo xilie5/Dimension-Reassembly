@@ -97,6 +97,7 @@ Docs                             游戏设计、技术设计和作品集说明
 - [项目架构说明](Docs/Architecture.md)
 - [完整游戏开发流程](Docs/FullProductionPlan.md)
 - [美术素材与版权合规](Docs/AssetCompliance.md)
+- [AI 美术素材生成指南](Docs/AIAssetGenerationGuide.md)
 - [Third Party Notices](ThirdPartyNotices.md)
 - [S7 内容审查](Docs/ContentAudit.md)
 - [技术设计说明](Docs/TechnicalDesign.md)
