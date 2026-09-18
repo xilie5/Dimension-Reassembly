@@ -4,6 +4,8 @@
 
 ![Portable Gate gameplay](Assets/Sokoban/Art/Generated/portfolio-structure.png)
 
+![Main menu](Assets/Sokoban/Art/Generated/portfolio-main-menu.png)
+
 ## 当前内容
 
 - 12 个经过自动化解法验证的关卡
