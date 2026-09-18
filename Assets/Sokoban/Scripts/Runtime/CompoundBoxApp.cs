@@ -61,7 +61,7 @@ namespace CompoundBox
             var boardObject = new GameObject("Board");
             boardObject.transform.SetParent(transform, false);
             boardView = boardObject.AddComponent<BoardView>();
-            boardView.Initialize(camera);
+            boardView.Initialize(camera, artTheme);
 
             var hudObject = new GameObject("HUD");
             hudObject.transform.SetParent(transform, false);

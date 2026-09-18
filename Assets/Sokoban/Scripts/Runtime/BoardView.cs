@@ -27,6 +27,7 @@ namespace CompoundBox
         private ObjectPool<SpriteRenderer> previewCellPool;
         private readonly List<SpriteRenderer> previewCells = new List<SpriteRenderer>();
         private Camera gameCamera;
+        private IBoardVisualTheme visualTheme;
         private GridBoardState currentState;
         private GridBoardState previewState;
         private GridDirection previewDirection;
@@ -34,9 +35,10 @@ namespace CompoundBox
         private int builtWidth = -1;
         private int builtHeight = -1;
 
-        public void Initialize(Camera camera)
+        public void Initialize(Camera camera, IBoardVisualTheme theme = null)
         {
             gameCamera = camera;
+            visualTheme = theme;
             tileRoot = new GameObject("Tiles").transform;
             tileRoot.SetParent(transform, false);
             entityRoot = new GameObject("Entities").transform;
@@ -188,7 +190,7 @@ namespace CompoundBox
                     var floor = CreateRenderer(
                         $"Tile {x},{y}",
                         tileRoot,
-                        WhiteboxSprites.Square,
+                        FloorSprite,
                         CellCentre(cell),
                         (x + y) % 2 == 0 ? GridPalette.FloorA : GridPalette.FloorB,
                         0);
@@ -200,7 +202,7 @@ namespace CompoundBox
                             var wall = CreateRenderer(
                                 "Wall",
                                 floor.transform,
-                                WhiteboxSprites.RoundedSquare,
+                                WallSprite,
                                 new Vector3(0f, 0.08f, 0f),
                                 GridPalette.Wall,
                                 2);
@@ -221,7 +223,7 @@ namespace CompoundBox
                             var exitRing = CreateRenderer(
                                 "Exit",
                                 floor.transform,
-                                WhiteboxSprites.Ring,
+                                ExitSprite,
                                 Vector3.zero,
                                 GridPalette.Exit,
                                 3);
@@ -263,7 +265,7 @@ namespace CompoundBox
             var baseRing = CreateRenderer(
                 "Goal",
                 parent,
-                WhiteboxSprites.Ring,
+                GoalSprite,
                 Vector3.zero,
                 GridPalette.Matter(goal.Matter),
                 3);
@@ -307,7 +309,7 @@ namespace CompoundBox
             var outer = CreateRenderer(
                 "Portal",
                 parent,
-                WhiteboxSprites.Ring,
+                PortalSprite,
                 Vector3.zero,
                 colour,
                 3);
@@ -391,7 +393,7 @@ namespace CompoundBox
                 visual.LocalMatter.Add(matter);
                 var cellView = cellViewPool.Get();
                 cellView.transform.SetParent(root, false);
-                cellView.Configure(entity.Kind, matter, entity.Cells.Count > 1, local);
+                cellView.Configure(entity.Kind, matter, entity.Cells.Count > 1, local, visualTheme);
                 visual.CellViews.Add(cellView);
             }
 
@@ -500,6 +502,12 @@ namespace CompoundBox
         {
             return new Vector3(cell.x, cell.y, 0f);
         }
+
+        private Sprite FloorSprite => visualTheme?.FloorSprite ?? WhiteboxSprites.Square;
+        private Sprite WallSprite => visualTheme?.WallSprite ?? WhiteboxSprites.RoundedSquare;
+        private Sprite GoalSprite => visualTheme?.GoalSprite ?? WhiteboxSprites.Ring;
+        private Sprite ExitSprite => visualTheme?.ExitSprite ?? WhiteboxSprites.Ring;
+        private Sprite PortalSprite => visualTheme?.PortalSprite ?? WhiteboxSprites.Ring;
 
         private static Color WithAlpha(Color colour, float alpha)
         {

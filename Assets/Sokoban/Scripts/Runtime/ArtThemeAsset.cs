@@ -3,7 +3,7 @@ using UnityEngine;
 namespace CompoundBox
 {
     [CreateAssetMenu(fileName = "Foundry Theme", menuName = "Compound Box/Art Theme")]
-    public sealed class ArtThemeAsset : ScriptableObject
+    public sealed class ArtThemeAsset : ScriptableObject, IBoardVisualTheme
     {
         [Header("Identity")]
         [SerializeField] private string themeId = "foundry";
@@ -38,6 +38,15 @@ namespace CompoundBox
         [SerializeField] private Sprite iconAudioOn;
         [SerializeField] private Sprite iconAudioOff;
 
+        [Header("Board")]
+        [SerializeField] private Sprite floorSprite;
+        [SerializeField] private Sprite wallSprite;
+        [SerializeField] private Sprite goalSprite;
+        [SerializeField] private Sprite exitSprite;
+        [SerializeField] private Sprite portalSprite;
+        [SerializeField] private Sprite playerSprite;
+        [SerializeField] private Sprite matterSprite;
+
         [Header("Audio")]
         [SerializeField] private AudioClip uiClick;
         [SerializeField] private AudioClip uiConfirm;
@@ -63,6 +72,13 @@ namespace CompoundBox
         public Sprite IconRedo => iconRedo;
         public Sprite IconAudioOn => iconAudioOn;
         public Sprite IconAudioOff => iconAudioOff;
+        public Sprite FloorSprite => floorSprite;
+        public Sprite WallSprite => wallSprite;
+        public Sprite GoalSprite => goalSprite;
+        public Sprite ExitSprite => exitSprite;
+        public Sprite PortalSprite => portalSprite;
+        public Sprite PlayerSprite => playerSprite;
+        public Sprite MatterSprite => matterSprite;
         public AudioClip UiClick => uiClick;
         public AudioClip UiConfirm => uiConfirm;
         public AudioClip UiError => uiError;

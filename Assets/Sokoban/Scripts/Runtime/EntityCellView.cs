@@ -9,7 +9,12 @@ namespace CompoundBox
         private SpriteRenderer inner;
         private SpriteRenderer accent;
 
-        public void Configure(EntityKind kind, MatterType matter, bool compound, Vector2Int localCell)
+        public void Configure(
+            EntityKind kind,
+            MatterType matter,
+            bool compound,
+            Vector2Int localCell,
+            IBoardVisualTheme theme = null)
         {
             EnsureHierarchy();
             transform.localPosition = new Vector3(localCell.x, localCell.y, 0f);
@@ -18,17 +23,17 @@ namespace CompoundBox
 
             if (kind == EntityKind.Player)
             {
-                ConfigurePlayer();
+                ConfigurePlayer(theme);
                 return;
             }
 
             if (kind == EntityKind.PortalNode)
             {
-                ConfigurePortalNode();
+                ConfigurePortalNode(theme);
                 return;
             }
 
-            ConfigureMatter(matter, compound);
+                ConfigureMatter(matter, compound, theme);
         }
 
         public void ResetForPool()
@@ -36,7 +41,7 @@ namespace CompoundBox
             gameObject.SetActive(false);
         }
 
-        private void ConfigureMatter(MatterType matter, bool compound)
+        private void ConfigureMatter(MatterType matter, bool compound, IBoardVisualTheme theme)
         {
             shadow.sprite = WhiteboxSprites.RoundedSquare;
             shadow.color = GridPalette.ShadowColour;
@@ -44,7 +49,7 @@ namespace CompoundBox
             shadow.transform.localScale = new Vector3(0.82f, 0.82f, 1f);
             shadow.sortingOrder = 5;
 
-            shell.sprite = WhiteboxSprites.RoundedSquare;
+            shell.sprite = theme?.MatterSprite ?? WhiteboxSprites.RoundedSquare;
             shell.color = GridPalette.Matter(matter);
             shell.transform.localPosition = Vector3.zero;
             shell.transform.localScale = new Vector3(0.8f, 0.8f, 1f);
@@ -67,7 +72,7 @@ namespace CompoundBox
             accent.sortingOrder = 8;
         }
 
-        private void ConfigurePlayer()
+        private void ConfigurePlayer(IBoardVisualTheme theme)
         {
             shadow.sprite = WhiteboxSprites.Circle;
             shadow.color = GridPalette.ShadowColour;
@@ -75,7 +80,7 @@ namespace CompoundBox
             shadow.transform.localScale = new Vector3(0.76f, 0.76f, 1f);
             shadow.sortingOrder = 6;
 
-            shell.sprite = WhiteboxSprites.Circle;
+            shell.sprite = theme?.PlayerSprite ?? WhiteboxSprites.Circle;
             shell.color = GridPalette.Player;
             shell.transform.localPosition = Vector3.zero;
             shell.transform.localScale = new Vector3(0.73f, 0.73f, 1f);
@@ -98,7 +103,7 @@ namespace CompoundBox
             accent.sortingOrder = 9;
         }
 
-        private void ConfigurePortalNode()
+        private void ConfigurePortalNode(IBoardVisualTheme theme)
         {
             shadow.sprite = WhiteboxSprites.Circle;
             shadow.color = GridPalette.ShadowColour;
@@ -106,7 +111,7 @@ namespace CompoundBox
             shadow.transform.localScale = new Vector3(0.72f, 0.72f, 1f);
             shadow.sortingOrder = 7;
 
-            shell.sprite = WhiteboxSprites.Ring;
+            shell.sprite = theme?.PortalSprite ?? WhiteboxSprites.Ring;
             shell.color = GridPalette.Portal('a');
             shell.transform.localPosition = Vector3.zero;
             shell.transform.localScale = new Vector3(0.72f, 0.72f, 1f);
