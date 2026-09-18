@@ -93,6 +93,8 @@ Docs                             游戏设计、技术设计和作品集说明
 - [完整开发执行计划](Docs/ProductionPlan.md)
 - [项目完整实现说明](Docs/ImplementationDeepDive.md)
 - [项目架构说明](Docs/Architecture.md)
+- [完整游戏开发流程](Docs/FullProductionPlan.md)
+- [美术素材与版权合规](Docs/AssetCompliance.md)
 - [S7 内容审查](Docs/ContentAudit.md)
 - [技术设计说明](Docs/TechnicalDesign.md)
 - [作品集展示指南](Docs/PortfolioGuide.md)
