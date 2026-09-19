@@ -117,7 +117,11 @@ namespace CompoundBox
             AudioClip toggle,
             Sprite floorTileSprite = null,
             Sprite wallTileSprite = null,
-            Sprite matterTileSprite = null)
+            Sprite matterTileSprite = null,
+            Sprite playerTileSprite = null,
+            Sprite goalTileSprite = null,
+            Sprite portalTileSprite = null,
+            Sprite exitTileSprite = null)
         {
             themeId = id;
             background = backgroundColour;
@@ -146,6 +150,10 @@ namespace CompoundBox
             floorSprite = floorTileSprite;
             wallSprite = wallTileSprite;
             matterSprite = matterTileSprite;
+            playerSprite = playerTileSprite;
+            goalSprite = goalTileSprite;
+            portalSprite = portalTileSprite;
+            exitSprite = exitTileSprite;
         }
     }
 }

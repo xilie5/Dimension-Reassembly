@@ -6,6 +6,8 @@
 
 ![Main menu](Assets/Sokoban/Art/Generated/portfolio-main-menu.png)
 
+![AI Foundry gameplay](Assets/Sokoban/Art/Generated/portfolio-foundry-ai.png)
+
 ## 当前内容
 
 - 12 个经过自动化解法验证的关卡

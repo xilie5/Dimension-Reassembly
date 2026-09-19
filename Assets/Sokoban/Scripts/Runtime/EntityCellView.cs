@@ -43,6 +43,7 @@ namespace CompoundBox
 
         private void ConfigureMatter(MatterType matter, bool compound, IBoardVisualTheme theme)
         {
+            var customSprite = theme?.MatterSprite != null;
             shadow.sprite = WhiteboxSprites.RoundedSquare;
             shadow.color = GridPalette.ShadowColour;
             shadow.transform.localPosition = new Vector3(-0.045f, -0.06f, 0f);
@@ -52,10 +53,12 @@ namespace CompoundBox
             shell.sprite = theme?.MatterSprite ?? WhiteboxSprites.RoundedSquare;
             shell.color = GridPalette.Matter(matter);
             shell.transform.localPosition = Vector3.zero;
-            shell.transform.localScale = new Vector3(0.8f, 0.8f, 1f);
+            shell.transform.localScale = customSprite
+                ? new Vector3(0.72f, 0.72f, 1f)
+                : new Vector3(0.8f, 0.8f, 1f);
             shell.sortingOrder = 6;
 
-            inner.gameObject.SetActive(true);
+            inner.gameObject.SetActive(!customSprite);
             inner.sprite = WhiteboxSprites.Square;
             inner.color = GridPalette.MatterDark(matter);
             inner.transform.localPosition = Vector3.zero;
@@ -74,6 +77,7 @@ namespace CompoundBox
 
         private void ConfigurePlayer(IBoardVisualTheme theme)
         {
+            var customSprite = theme?.PlayerSprite != null;
             shadow.sprite = WhiteboxSprites.Circle;
             shadow.color = GridPalette.ShadowColour;
             shadow.transform.localPosition = new Vector3(-0.045f, -0.07f, 0f);
@@ -83,10 +87,12 @@ namespace CompoundBox
             shell.sprite = theme?.PlayerSprite ?? WhiteboxSprites.Circle;
             shell.color = GridPalette.Player;
             shell.transform.localPosition = Vector3.zero;
-            shell.transform.localScale = new Vector3(0.73f, 0.73f, 1f);
+            shell.transform.localScale = customSprite
+                ? new Vector3(0.62f, 0.62f, 1f)
+                : new Vector3(0.73f, 0.73f, 1f);
             shell.sortingOrder = 7;
 
-            inner.gameObject.SetActive(true);
+            inner.gameObject.SetActive(!customSprite);
             inner.sprite = WhiteboxSprites.Circle;
             inner.color = GridPalette.PlayerCore;
             inner.transform.localPosition = Vector3.zero;
@@ -94,7 +100,7 @@ namespace CompoundBox
             inner.transform.localScale = new Vector3(0.38f, 0.38f, 1f);
             inner.sortingOrder = 8;
 
-            accent.gameObject.SetActive(true);
+            accent.gameObject.SetActive(!customSprite);
             accent.sprite = WhiteboxSprites.Chevron;
             accent.color = GridPalette.PlayerCore;
             accent.transform.localPosition = new Vector3(0f, 0.28f, 0f);
@@ -105,6 +111,7 @@ namespace CompoundBox
 
         private void ConfigurePortalNode(IBoardVisualTheme theme)
         {
+            var customSprite = theme?.PortalSprite != null;
             shadow.sprite = WhiteboxSprites.Circle;
             shadow.color = GridPalette.ShadowColour;
             shadow.transform.localPosition = new Vector3(-0.04f, -0.06f, 0f);
@@ -114,10 +121,12 @@ namespace CompoundBox
             shell.sprite = theme?.PortalSprite ?? WhiteboxSprites.Ring;
             shell.color = GridPalette.Portal('a');
             shell.transform.localPosition = Vector3.zero;
-            shell.transform.localScale = new Vector3(0.72f, 0.72f, 1f);
+            shell.transform.localScale = customSprite
+                ? new Vector3(0.66f, 0.66f, 1f)
+                : new Vector3(0.72f, 0.72f, 1f);
             shell.sortingOrder = 8;
 
-            inner.gameObject.SetActive(true);
+            inner.gameObject.SetActive(!customSprite);
             inner.sprite = WhiteboxSprites.Diamond;
             inner.color = GridPalette.Portal('a');
             inner.transform.localPosition = Vector3.zero;

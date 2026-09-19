@@ -28,6 +28,14 @@ namespace CompoundBox.Editor
             var confirm = AssetDatabase.LoadAssetAtPath<AudioClip>(KenneyRoot + "/Audio/confirmation_001.ogg");
             var error = AssetDatabase.LoadAssetAtPath<AudioClip>(KenneyRoot + "/Audio/error_001.ogg");
             var toggle = AssetDatabase.LoadAssetAtPath<AudioClip>(KenneyRoot + "/Audio/toggle_001.ogg");
+            var themeRoot = "Assets/Sokoban/Art/Themes/Foundry";
+            var floorTile = LoadSprite(themeRoot + "/floor-tile.png");
+            var wallTile = LoadSprite(themeRoot + "/wall-tile.png");
+            var matterTile = LoadSprite(themeRoot + "/matter-block.png");
+            var playerTile = LoadSprite(themeRoot + "/player-unit.png");
+            var goalTile = LoadSprite(themeRoot + "/goal-socket.png");
+            var portalTile = LoadSprite(themeRoot + "/portal-emitter.png");
+            var exitTile = LoadSprite(themeRoot + "/exit-gate.png");
 
             var theme = AssetDatabase.LoadAssetAtPath<ArtThemeAsset>(ThemePath);
             if (theme == null)
@@ -68,9 +76,13 @@ namespace CompoundBox.Editor
                 confirm,
                 error,
                 toggle,
-                null,
-                null,
-                null);
+                floorTile,
+                wallTile,
+                matterTile,
+                playerTile,
+                goalTile,
+                portalTile,
+                exitTile);
 
             EditorUtility.SetDirty(theme);
             AssetDatabase.SaveAssets();
