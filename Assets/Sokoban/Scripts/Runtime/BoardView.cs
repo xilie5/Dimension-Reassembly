@@ -187,6 +187,15 @@ namespace CompoundBox
                         continue;
                     }
 
+                    var baseTile = CreateRenderer(
+                        $"Base Tile {x},{y}",
+                        tileRoot,
+                        WhiteboxSprites.Square,
+                        CellCentre(cell),
+                        (x + y) % 2 == 0 ? GridPalette.FloorA : GridPalette.FloorB,
+                        -1);
+                    baseTile.transform.localScale = new Vector3(1.02f, 1.02f, 1f);
+
                     var floor = CreateRenderer(
                         $"Tile {x},{y}",
                         tileRoot,
@@ -194,7 +203,8 @@ namespace CompoundBox
                         CellCentre(cell),
                         (x + y) % 2 == 0 ? GridPalette.FloorA : GridPalette.FloorB,
                         0);
-                    floor.transform.localScale = new Vector3(0.96f, 0.96f, 1f);
+            var floorScale = visualTheme?.FloorSprite != null ? 1.24f : 0.96f;
+            floor.transform.localScale = new Vector3(floorScale, floorScale, 1f);
 
                     switch (tile)
                     {
@@ -206,7 +216,8 @@ namespace CompoundBox
                                 new Vector3(0f, 0.08f, 0f),
                                 GridPalette.Wall,
                                 2);
-                            wall.transform.localScale = new Vector3(0.94f, 0.94f, 1f);
+                            var wallScale = visualTheme?.WallSprite != null ? 1.24f : 0.94f;
+                            wall.transform.localScale = new Vector3(wallScale, wallScale, 1f);
                             var edge = CreateRenderer(
                                 "Edge",
                                 wall.transform,
