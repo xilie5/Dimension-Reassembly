@@ -29,13 +29,13 @@ namespace CompoundBox.Editor
             var error = AssetDatabase.LoadAssetAtPath<AudioClip>(KenneyRoot + "/Audio/error_001.ogg");
             var toggle = AssetDatabase.LoadAssetAtPath<AudioClip>(KenneyRoot + "/Audio/toggle_001.ogg");
             var themeRoot = "Assets/Sokoban/Art/Themes/Foundry";
-            var floorTile = LoadSprite(themeRoot + "/floor-tile.png");
-            var wallTile = LoadSprite(themeRoot + "/wall-tile.png");
-            var matterTile = LoadSprite(themeRoot + "/matter-block.png");
-            var playerTile = LoadSprite(themeRoot + "/player-unit.png");
-            var goalTile = LoadSprite(themeRoot + "/goal-socket.png");
-            var portalTile = LoadSprite(themeRoot + "/portal-emitter.png");
-            var exitTile = LoadSprite(themeRoot + "/exit-gate.png");
+            var floorTile = LoadSprite(themeRoot + "/floor-tile.png", 256f);
+            var wallTile = LoadSprite(themeRoot + "/wall-tile.png", 256f);
+            var matterTile = LoadSprite(themeRoot + "/matter-block.png", 256f);
+            var playerTile = LoadSprite(themeRoot + "/player-unit.png", 256f);
+            var goalTile = LoadSprite(themeRoot + "/goal-socket.png", 256f);
+            var portalTile = LoadSprite(themeRoot + "/portal-emitter.png", 256f);
+            var exitTile = LoadSprite(themeRoot + "/exit-gate.png", 256f);
 
             var theme = AssetDatabase.LoadAssetAtPath<ArtThemeAsset>(ThemePath);
             if (theme == null)
@@ -97,13 +97,13 @@ namespace CompoundBox.Editor
             return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
         }
 
-        private static Sprite LoadSprite(string path)
+        private static Sprite LoadSprite(string path, float pixelsPerUnit = 100f)
         {
-            ConfigureSpriteImporter(path);
+            ConfigureSpriteImporter(path, pixelsPerUnit);
             return AssetDatabase.LoadAssetAtPath<Sprite>(path);
         }
 
-        private static void ConfigureSpriteImporter(string path)
+        private static void ConfigureSpriteImporter(string path, float pixelsPerUnit = 100f)
         {
             var importer = AssetImporter.GetAtPath(path) as TextureImporter;
             if (importer == null)
@@ -113,7 +113,7 @@ namespace CompoundBox.Editor
 
             importer.textureType = TextureImporterType.Sprite;
             importer.spriteImportMode = SpriteImportMode.Single;
-            importer.spritePixelsPerUnit = 100f;
+            importer.spritePixelsPerUnit = pixelsPerUnit;
             importer.alphaIsTransparency = true;
             importer.mipmapEnabled = false;
             importer.filterMode = FilterMode.Bilinear;
