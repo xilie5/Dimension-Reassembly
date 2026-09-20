@@ -90,22 +90,6 @@ Tools > Compound Box > Build Windows64
 - 可移动传送节点视觉标识
 - 对象池复用和关卡 Catalog 转换
 
-## 文档
-
-- [完整技术分析与求职说明](Docs/TechnicalPortfolioReport.md)
-- [简历项目经历与零基础技术教学](Docs/ResumeProjectExperienceAndTechTutorial.md)
-- [项目架构说明](Docs/Architecture.md)
-- [游戏设计说明](Docs/GameDesign.md)
-- [同类游戏与竞品调研](Docs/CompetitiveResearch.md)
-- [五款重点作品的地图与机制拆解](Docs/ComparativeLevelDesign.md)
-- [完整游戏开发流程](Docs/FullProductionPlan.md)
-- [美术与表现层方案](Docs/ArtAndPresentationPipeline.md)
-- [美术素材与版权合规](Docs/AssetCompliance.md)
-- [AI 美术素材生成指南](Docs/AIAssetGenerationGuide.md)
-- [S7 内容审查](Docs/ContentAudit.md)
-- [作品集展示指南](Docs/PortfolioGuide.md)
-- [Third Party Notices](ThirdPartyNotices.md)
-
 ## 设计参考
 
 项目参考了经典 Sokoban 的规则可读性、Baba Is You 的涌现式组合、Patrick's Parabox 的空间递归表达、A Monster's Expedition 的温和教学，以及 Sokobond 对“组合/分子”主题的处理。参考集中在机制研究和教学节奏，没有复制任何商业作品的关卡、美术或代码。
