@@ -2,17 +2,33 @@
 
 ## 1. 当前状态
 
-当前工程没有导入外部美术、音频或字体资源。
+当前工程同时使用：
 
-现有表现由代码生成：
+- Kenney CC0 UI、图标、Input Prompt 与音效素材
+- 通过 AI 生成并后处理的 Foundry 棋盘主题素材
+- `WhiteboxSprites` 作为缺失美术资源时的程序化备用表现
+- `ProceduralAudio` 作为缺失音频时的程序化备用音效
 
-- `WhiteboxSprites`
-- `GridPalette`
-- `EntityCellView`
-- `BoardView`
-- `ProceduralAudio`
+正式素材来源记录：
 
-因此当前版本的版权风险最低。
+- `Assets/Sokoban/Art/ThirdParty/Kenney/SOURCE.md`
+- `Assets/Sokoban/Art/AIArt/SOURCE.md`
+
+运行时主题：
+
+- `Assets/Sokoban/Resources/Art/FoundryTheme.asset`
+
+AI 素材处理流程：
+
+- `Tools/process_ai_art.py`
+
+提示词与生成记录：
+
+- `Tools/AIAssets/foundry-prompts.jsonl`
+
+正式棋盘素材：
+
+- `Assets/Sokoban/Art/Themes/Foundry/`
 
 ## 2. 允许的素材来源
 
@@ -100,7 +116,7 @@ finalAssetPath
 ### 2D Sprite
 
 - Texture Type: Sprite (2D and UI)
-- Pixels Per Unit: 64 或 128
+- 当前 Foundry 棋盘素材使用 256 PPU
 - Filter Mode: Point 或 Bilinear
 - Compression: 按平台调整
 - Pivot: Center 或自定义

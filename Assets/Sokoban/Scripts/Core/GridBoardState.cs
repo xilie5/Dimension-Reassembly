@@ -65,6 +65,23 @@ namespace CompoundBox
         }
     }
 
+    public sealed class PortalLink
+    {
+        public PortalLink(PortalPair pair, bool startsAtEntry)
+        {
+            Pair = pair;
+            StartsAtEntry = startsAtEntry;
+        }
+
+        public PortalPair Pair { get; }
+        public bool StartsAtEntry { get; }
+
+        public Vector2Int ResolveDestination(GridBoardState state)
+        {
+            return StartsAtEntry ? Pair.ResolveExit(state) : Pair.ResolveEntry(state);
+        }
+    }
+
     public sealed class GoalDefinition
     {
         public GoalDefinition(Vector2Int cell, MatterType matter, bool requiresCompound)
@@ -97,6 +114,7 @@ namespace CompoundBox
             Goals = new List<GoalDefinition>();
             PortalPairs = new List<PortalPair>();
             Portals = new Dictionary<Vector2Int, PortalPair>();
+            PortalLinks = new Dictionary<Vector2Int, PortalLink>();
             Facing = GridDirection.Right;
             PlayerId = -1;
             NextEntityId = 1;
@@ -110,6 +128,7 @@ namespace CompoundBox
         public List<GoalDefinition> Goals { get; private set; }
         public List<PortalPair> PortalPairs { get; private set; }
         public Dictionary<Vector2Int, PortalPair> Portals { get; private set; }
+        public Dictionary<Vector2Int, PortalLink> PortalLinks { get; private set; }
         public int PlayerId { get; set; }
         public int NextEntityId { get; set; }
         public GridDirection Facing { get; set; }
@@ -218,6 +237,7 @@ namespace CompoundBox
         public void RefreshPortals()
         {
             Portals.Clear();
+            PortalLinks.Clear();
             for (var i = 0; i < PortalPairs.Count; i++)
             {
                 var pair = PortalPairs[i];
@@ -226,6 +246,12 @@ namespace CompoundBox
                 if (InBounds(entry) && InBounds(exit))
                 {
                     Portals[entry] = pair;
+                    Portals[exit] = pair;
+                    if (entry != exit)
+                    {
+                        PortalLinks[entry] = new PortalLink(pair, true);
+                        PortalLinks[exit] = new PortalLink(pair, false);
+                    }
                 }
             }
         }
@@ -405,6 +431,10 @@ namespace CompoundBox
                 if (!InBounds(entry) || !InBounds(exit))
                 {
                     errors.Add($"Portal pair {pair.Id} resolves outside the board.");
+                }
+                else if (entry == exit)
+                {
+                    errors.Add($"Portal pair {pair.Id} resolves to the same cell.");
                 }
             }
 

@@ -432,7 +432,27 @@ namespace CompoundBox
 
                     if (!occupied.Add(cell))
                     {
-                        reason = "The move would compress two masses into one cell.";
+                        reason = "The move would compress two entities into one cell.";
+                        return false;
+                    }
+                }
+            }
+
+            for (var entityIndex = 0; entityIndex < state.Entities.Count; entityIndex++)
+            {
+                var entity = state.Entities[entityIndex];
+                if (!movingIds.Contains(entity.Id) || entity.Kind != EntityKind.PortalNode)
+                {
+                    continue;
+                }
+
+                var cells = proposals[entity.Id];
+                for (var cellIndex = 0; cellIndex < cells.Count; cellIndex++)
+                {
+                    var cell = cells[cellIndex];
+                    if (state.GetTile(cell) == TileKind.Portal)
+                    {
+                        reason = "A portable portal cannot be pushed onto another portal.";
                         return false;
                     }
                 }
@@ -484,21 +504,40 @@ namespace CompoundBox
 
             for (var jumpIndex = 0; jumpIndex < 4; jumpIndex++)
             {
-                PortalPair pair = null;
+                PortalLink link = null;
+                var trigger = default(Vector2Int);
+                var bestScore = long.MinValue;
                 for (var cellIndex = 0; cellIndex < proposal.Count; cellIndex++)
                 {
-                    if (state.Portals.TryGetValue(proposal[cellIndex], out pair))
+                    var candidate = proposal[cellIndex];
+                    if (!state.PortalLinks.TryGetValue(candidate, out var candidateLink))
                     {
-                        break;
+                        continue;
+                    }
+
+                    if (entity.Kind == EntityKind.Player &&
+                        state.FindEntityAt(candidate)?.Kind == EntityKind.PortalNode)
+                    {
+                        continue;
+                    }
+
+                    var score = candidate.x * offset.x + candidate.y * offset.y;
+                    if (score > bestScore)
+                    {
+                        bestScore = score;
+                        link = candidateLink;
+                        trigger = candidate;
                     }
                 }
 
-                if (pair == null)
+                if (link == null)
                 {
                     return true;
                 }
 
-                var translation = pair.ResolveExit(state) - GetAnchor(proposal);
+                var destination = link.ResolveDestination(state);
+                // Preserve the full shape and place every cell beyond the destination portal.
+                var translation = PortalExitTranslation(proposal, trigger, destination, offset);
                 for (var cellIndex = 0; cellIndex < proposal.Count; cellIndex++)
                 {
                     proposal[cellIndex] += translation;
@@ -510,19 +549,40 @@ namespace CompoundBox
             return false;
         }
 
-        private static Vector2Int GetAnchor(IReadOnlyList<Vector2Int> cells)
+        private static Vector2Int PortalExitTranslation(
+            IReadOnlyList<Vector2Int> cells,
+            Vector2Int trigger,
+            Vector2Int destination,
+            Vector2Int offset)
         {
-            var anchor = cells[0];
-            for (var i = 1; i < cells.Count; i++)
+            if (offset.x != 0)
             {
-                var cell = cells[i];
-                if (cell.y < anchor.y || (cell.y == anchor.y && cell.x < anchor.x))
+                var minX = cells[0].x;
+                var maxX = cells[0].x;
+                for (var i = 0; i < cells.Count; i++)
                 {
-                    anchor = cell;
+                    minX = Mathf.Min(minX, cells[i].x);
+                    maxX = Mathf.Max(maxX, cells[i].x);
                 }
+
+                var translationX = offset.x > 0
+                    ? destination.x + 1 - minX
+                    : destination.x - 1 - maxX;
+                return new Vector2Int(translationX, destination.y - trigger.y);
             }
 
-            return anchor;
+            var minY = cells[0].y;
+            var maxY = cells[0].y;
+            for (var i = 0; i < cells.Count; i++)
+            {
+                minY = Mathf.Min(minY, cells[i].y);
+                maxY = Mathf.Max(maxY, cells[i].y);
+            }
+
+            var translationY = offset.y > 0
+                ? destination.y + 1 - minY
+                : destination.y - 1 - maxY;
+            return new Vector2Int(destination.x - trigger.x, translationY);
         }
 
         private static bool AreAdjacent(GridEntity left, GridEntity right)

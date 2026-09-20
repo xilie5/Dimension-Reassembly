@@ -6,6 +6,11 @@ namespace CompoundBox
 {
     public sealed class BoardView : MonoBehaviour
     {
+        private const float CustomFloorWorldScale = 1.24f;
+        private const float CustomWallWorldScale = 1.15f;
+        private const float CustomCellPieceWorldScale = 1.24f;
+        private static readonly Color CompoundGoalMarkerColour = new Color(1f, 0.82f, 0.35f, 1f);
+
         private sealed class EntityVisual
         {
             public int Id;
@@ -203,53 +208,60 @@ namespace CompoundBox
                         CellCentre(cell),
                         (x + y) % 2 == 0 ? GridPalette.FloorA : GridPalette.FloorB,
                         0);
-            var floorScale = visualTheme?.FloorSprite != null ? 1.24f : 0.96f;
-            floor.transform.localScale = new Vector3(floorScale, floorScale, 1f);
+                    var floorScale = visualTheme?.FloorSprite != null ? CustomFloorWorldScale : 0.96f;
+                    floor.transform.localScale = new Vector3(floorScale, floorScale, 1f);
 
                     switch (tile)
                     {
                         case TileKind.Wall:
                             var wall = CreateRenderer(
                                 "Wall",
-                                floor.transform,
+                                tileRoot,
                                 WallSprite,
-                                new Vector3(0f, 0.08f, 0f),
+                                CellCentre(cell) + new Vector3(0f, 0.08f, 0f),
                                 GridPalette.Wall,
                                 2);
-                            var wallScale = visualTheme?.WallSprite != null ? 1.24f : 0.94f;
+                            var wallScale = visualTheme?.WallSprite != null ? CustomWallWorldScale : 0.94f;
                             wall.transform.localScale = new Vector3(wallScale, wallScale, 1f);
-                            var edge = CreateRenderer(
-                                "Edge",
-                                wall.transform,
-                                WhiteboxSprites.Square,
-                                new Vector3(0f, 0.29f, 0f),
-                                GridPalette.WallEdge,
-                                1);
-                            edge.transform.localScale = new Vector3(0.72f, 0.08f, 1f);
+                            if (visualTheme?.WallSprite == null)
+                            {
+                                var edge = CreateRenderer(
+                                    "Edge",
+                                    wall.transform,
+                                    WhiteboxSprites.Square,
+                                    new Vector3(0f, 0.29f, 0f),
+                                    GridPalette.WallEdge,
+                                    1);
+                                edge.transform.localScale = new Vector3(0.72f, 0.08f, 1f);
+                            }
                             break;
                         case TileKind.Goal:
-                            DrawGoal(floor.transform, state, cell);
+                            DrawGoal(tileRoot, state, cell);
                             break;
                         case TileKind.Exit:
                             var exitRing = CreateRenderer(
                                 "Exit",
-                                floor.transform,
+                                tileRoot,
                                 ExitSprite,
-                                Vector3.zero,
+                                CellCentre(cell),
                                 GridPalette.Exit,
                                 3);
-                            exitRing.transform.localScale = new Vector3(0.58f, 0.58f, 1f);
+                            var exitScale = visualTheme?.ExitSprite != null
+                                ? CustomCellPieceWorldScale
+                                : 0.58f;
+                            exitRing.transform.localScale = new Vector3(exitScale, exitScale, 1f);
                             var chevron = CreateRenderer(
                                 "Exit Direction",
-                                floor.transform,
+                                tileRoot,
                                 WhiteboxSprites.Chevron,
-                                new Vector3(0f, 0.02f, 0f),
+                                CellCentre(cell) + new Vector3(0f, 0.02f, 0f),
                                 GridPalette.Exit,
                                 4);
                             chevron.transform.localScale = new Vector3(0.3f, 0.3f, 1f);
+                            chevron.gameObject.SetActive(visualTheme?.ExitSprite == null);
                             break;
                         case TileKind.Portal:
-                            DrawPortal(floor.transform, state, cell);
+                            DrawPortal(tileRoot, state, cell);
                             break;
                     }
                 }
@@ -277,23 +289,70 @@ namespace CompoundBox
                 "Goal",
                 parent,
                 GoalSprite,
-                Vector3.zero,
+                CellCentre(cell),
                 GridPalette.Matter(goal.Matter),
                 3);
             baseRing.transform.localScale = goal.RequiresCompound
-                ? new Vector3(0.66f, 0.66f, 1f)
-                : new Vector3(0.52f, 0.52f, 1f);
+                ? visualTheme?.GoalSprite != null
+                    ? new Vector3(CustomCellPieceWorldScale, CustomCellPieceWorldScale, 1f)
+                    : new Vector3(0.66f, 0.66f, 1f)
+                : visualTheme?.GoalSprite != null
+                    ? new Vector3(CustomCellPieceWorldScale, CustomCellPieceWorldScale, 1f)
+                    : new Vector3(0.52f, 0.52f, 1f);
 
             var core = CreateRenderer(
                 "Goal Core",
                 parent,
                 goal.RequiresCompound ? WhiteboxSprites.Diamond : WhiteboxSprites.Circle,
-                Vector3.zero,
+                CellCentre(cell),
                 GridPalette.MatterDark(goal.Matter),
                 2);
             core.transform.localScale = goal.RequiresCompound
                 ? new Vector3(0.24f, 0.24f, 1f)
                 : new Vector3(0.18f, 0.18f, 1f);
+            core.gameObject.SetActive(visualTheme?.GoalSprite == null);
+
+            if (!goal.RequiresCompound)
+            {
+                return;
+            }
+
+            var markerCentre = CellCentre(cell);
+            var markerBack = CreateRenderer(
+                "Goal Requirement",
+                parent,
+                WhiteboxSprites.RoundedSquare,
+                markerCentre,
+                new Color(0.02f, 0.035f, 0.05f, 0.9f),
+                5);
+            markerBack.transform.localScale = new Vector3(0.48f, 0.48f, 1f);
+
+            var bond = CreateRenderer(
+                "Goal Requirement Bond",
+                parent,
+                WhiteboxSprites.Square,
+                markerCentre,
+                CompoundGoalMarkerColour,
+                6);
+            bond.transform.localScale = new Vector3(0.24f, 0.065f, 1f);
+
+            var leftNode = CreateRenderer(
+                "Goal Requirement Node A",
+                parent,
+                WhiteboxSprites.Circle,
+                markerCentre + new Vector3(-0.11f, 0f, 0f),
+                CompoundGoalMarkerColour,
+                7);
+            leftNode.transform.localScale = new Vector3(0.16f, 0.16f, 1f);
+
+            var rightNode = CreateRenderer(
+                "Goal Requirement Node B",
+                parent,
+                WhiteboxSprites.Circle,
+                markerCentre + new Vector3(0.11f, 0f, 0f),
+                CompoundGoalMarkerColour,
+                7);
+            rightNode.transform.localScale = new Vector3(0.16f, 0.16f, 1f);
         }
 
         private void DrawPortal(Transform parent, GridBoardState state, Vector2Int cell)
@@ -321,21 +380,24 @@ namespace CompoundBox
                 "Portal",
                 parent,
                 PortalSprite,
-                Vector3.zero,
+                CellCentre(cell),
                 colour,
                 3);
-            outer.transform.localScale = new Vector3(0.72f, 0.72f, 1f);
+            outer.transform.localScale = visualTheme?.PortalSprite != null
+                ? new Vector3(CustomCellPieceWorldScale, CustomCellPieceWorldScale, 1f)
+                : new Vector3(0.72f, 0.72f, 1f);
 
             var inner = CreateRenderer(
                 isExit ? "Exit Core" : "Entry Core",
                 parent,
                 isExit ? WhiteboxSprites.Diamond : WhiteboxSprites.Circle,
-                Vector3.zero,
+                CellCentre(cell),
                 colour,
                 4);
             inner.transform.localScale = isExit
                 ? new Vector3(0.25f, 0.25f, 1f)
                 : new Vector3(0.2f, 0.2f, 1f);
+            inner.gameObject.SetActive(visualTheme?.PortalSprite == null);
         }
 
         private void ReconcileEntities(GridBoardState state, ActionResolution resolution)

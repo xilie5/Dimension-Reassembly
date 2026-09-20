@@ -28,15 +28,8 @@ MonoBehaviour:
   - {r: 0.9490196, g: 0.72156864, b: 0.3647059, a: 1}
   - {r: 0.9372549, g: 0.4509804, b: 0.53333336, a: 1}
   - {r: 0.65882355, g: 0.54509807, b: 0.91764706, a: 1}
-  panelTexture: {fileID: 2800000, guid: 53955e8d906a22647bc2ac7284e15f81, type: 3}
   buttonTexture: {fileID: 2800000, guid: 797763a5324c51449975380eef654a23, type: 3}
   buttonHoverTexture: {fileID: 2800000, guid: 2abc34d32a1c64942a20183fd2b77569, type: 3}
-  iconChapter: {fileID: 21300000, guid: 7ffc8cc8ef5a7794eac99f1b67c1aba4, type: 3}
-  iconLocked: {fileID: 21300000, guid: 257e9fd60a9fcbd4dac7735c0d7a3ce7, type: 3}
-  iconUndo: {fileID: 21300000, guid: fa272ecbb1685d346b235a7915cabee3, type: 3}
-  iconRedo: {fileID: 21300000, guid: 6501077abbaa61d46b02720f499706c1, type: 3}
-  iconAudioOn: {fileID: 21300000, guid: 23109759e47a5b74a9187b851b857346, type: 3}
-  iconAudioOff: {fileID: 21300000, guid: 545a91cb22c0a184fbe78451e3b16fe3, type: 3}
   floorSprite: {fileID: 21300000, guid: bab87855c5c0dc24d8ea377c546e177c, type: 3}
   wallSprite: {fileID: 21300000, guid: 9cb3cb494f75b9745ab0a3e8d69cf977, type: 3}
   goalSprite: {fileID: 21300000, guid: 0392885eeda318f4db845f7ab6edd3b1, type: 3}

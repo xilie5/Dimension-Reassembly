@@ -50,7 +50,7 @@ namespace CompoundBox
                     "#.....#...#",
                     "###########"
                 },
-                "RRRRDRUU"),
+                "RRRDRUU"),
 
             new LevelDefinition(
                 "compound-gate",
@@ -64,7 +64,7 @@ namespace CompoundBox
                     "#......Axx#",
                     "###########"
                 },
-                "RRRR"),
+                "RR"),
 
             new LevelDefinition(
                 "reassembly",
@@ -95,7 +95,7 @@ namespace CompoundBox
                     "#..........#",
                     "############"
                 },
-                "RRRRSDRRUUDLDLUU"),
+                "RSRRDDRRDRRUURULDDDRUU"),
 
             new LevelDefinition(
                 "dual-alloy",
@@ -261,7 +261,7 @@ namespace CompoundBox
                     "00000000000",
                     "00000000000"
                 },
-                "DRRRRRRULDLLLLLURR")
+                "URDLDRRDRU")
         };
 
         public static IReadOnlyList<LevelDefinition> All => Levels;

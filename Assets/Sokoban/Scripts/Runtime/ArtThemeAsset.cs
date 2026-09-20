@@ -28,15 +28,8 @@ namespace CompoundBox
         };
 
         [Header("UI")]
-        [SerializeField] private Texture2D panelTexture;
         [SerializeField] private Texture2D buttonTexture;
         [SerializeField] private Texture2D buttonHoverTexture;
-        [SerializeField] private Sprite iconChapter;
-        [SerializeField] private Sprite iconLocked;
-        [SerializeField] private Sprite iconUndo;
-        [SerializeField] private Sprite iconRedo;
-        [SerializeField] private Sprite iconAudioOn;
-        [SerializeField] private Sprite iconAudioOff;
 
         [Header("Board")]
         [SerializeField] private Sprite floorSprite;
@@ -63,15 +56,8 @@ namespace CompoundBox
         public Color PlayerCore => playerCore;
         public Color Exit => exit;
         public Color Goal => goal;
-        public Texture2D PanelTexture => panelTexture;
         public Texture2D ButtonTexture => buttonTexture;
         public Texture2D ButtonHoverTexture => buttonHoverTexture;
-        public Sprite IconChapter => iconChapter;
-        public Sprite IconLocked => iconLocked;
-        public Sprite IconUndo => iconUndo;
-        public Sprite IconRedo => iconRedo;
-        public Sprite IconAudioOn => iconAudioOn;
-        public Sprite IconAudioOff => iconAudioOff;
         public Sprite FloorSprite => floorSprite;
         public Sprite WallSprite => wallSprite;
         public Sprite GoalSprite => goalSprite;
@@ -102,15 +88,8 @@ namespace CompoundBox
             Color exitColour,
             Color goalColour,
             Color[] matterColours,
-            Texture2D panel,
             Texture2D button,
             Texture2D buttonHover,
-            Sprite chapterIcon,
-            Sprite lockedIcon,
-            Sprite undoIcon,
-            Sprite redoIcon,
-            Sprite audioOnIcon,
-            Sprite audioOffIcon,
             AudioClip click,
             AudioClip confirm,
             AudioClip error,
@@ -134,15 +113,8 @@ namespace CompoundBox
             exit = exitColour;
             goal = goalColour;
             matter = matterColours;
-            panelTexture = panel;
             buttonTexture = button;
             buttonHoverTexture = buttonHover;
-            iconChapter = chapterIcon;
-            iconLocked = lockedIcon;
-            iconUndo = undoIcon;
-            iconRedo = redoIcon;
-            iconAudioOn = audioOnIcon;
-            iconAudioOff = audioOffIcon;
             uiClick = click;
             uiConfirm = confirm;
             uiError = error;

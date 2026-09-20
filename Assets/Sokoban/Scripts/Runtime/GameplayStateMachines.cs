@@ -15,13 +15,6 @@ namespace CompoundBox
         Interacting
     }
 
-    public enum MechanismState
-    {
-        Closed,
-        Open,
-        Locked
-    }
-
     public sealed class LevelFlowStateMachine : StateMachine<LevelFlowState>
     {
         public LevelFlowStateMachine()

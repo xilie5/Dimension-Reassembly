@@ -10,7 +10,7 @@
 - `portfolio-main-menu.png`
 - `portfolio-foundry-ai.png`
 
-游戏中的棋盘、方块、玩家、目标、出口和传送门 Sprite 均由 `WhiteboxSprites.cs` 在运行时生成，不依赖外部贴图。音效同样由 `ProceduralAudio.cs` 在运行时合成。
+游戏优先使用 `FoundryTheme.asset` 中配置的正式 Sprite。主题资源缺失时，`WhiteboxSprites.cs` 会提供程序化备用图形；音频由 Kenney CC0 音效和 `ProceduralAudio.cs` 的程序化备用音效共同组成。
 
 这样做的目的：
 

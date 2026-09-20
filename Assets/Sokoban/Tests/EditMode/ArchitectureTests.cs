@@ -128,6 +128,37 @@ namespace CompoundBox.Tests
         }
 
         [Test]
+        public void PortalNode_UsesMobilityMarkersOnlyForMovableNodes()
+        {
+            var viewObject = new GameObject("Portal Marker Test");
+            var view = viewObject.AddComponent<EntityCellView>();
+
+            view.Configure(EntityKind.PortalNode, MatterType.None, false, Vector2Int.zero);
+            var markers = viewObject
+                .GetComponentsInChildren<Transform>(true)
+                .Where(item => item.name.StartsWith("Portal Move Marker"))
+                .ToArray();
+
+            Assert.That(markers.Length, Is.EqualTo(4));
+            Assert.That(markers.All(item => item.gameObject.activeSelf), Is.True);
+
+            view.Configure(EntityKind.Matter, MatterType.Cyan, false, Vector2Int.zero);
+            Assert.That(markers.All(item => !item.gameObject.activeSelf), Is.True);
+
+            Object.DestroyImmediate(viewObject);
+        }
+
+        [Test]
+        public void CompoundBoxInput_CreatesAndDisposesDefaultControlMap()
+        {
+            CompoundBoxInput input = null;
+
+            Assert.DoesNotThrow(() => input = new CompoundBoxInput());
+            Assert.That(input, Is.Not.Null);
+            Assert.DoesNotThrow(() => input.Dispose());
+        }
+
+        [Test]
         public void AdvancedLayout_BuildsOneMultiMaterialEntity()
         {
             var definition = new LevelDefinition(

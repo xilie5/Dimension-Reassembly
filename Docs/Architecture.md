@@ -319,7 +319,6 @@ SaveCoordinator
 
 ```text
 StateMachine<TState>
-IStateBehaviour<TState>
 ```
 
 当前状态：
@@ -334,14 +333,9 @@ PlayerActionState
   Idle
   Moving
   Interacting
-
-MechanismState
-  Closed
-  Open
-  Locked
 ```
 
-状态机用于控制流程和生命周期，而不是替代规则模拟。
+状态机只负责状态迁移和 StateChanged 事件。未使用的机关状态与行为钩子已经在清理阶段删除。
 
 ## 10. 数据驱动架构
 

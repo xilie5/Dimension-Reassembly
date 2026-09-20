@@ -2,77 +2,81 @@
 
 ## 1. 一分钟演示脚本
 
-1. 打开 `First Push`，展示基础移动、推动、目标和出口。
-2. 切到 `Split Decision`，按 `X` 拆分复合体，分别配送两个同材质碎片。
-3. 切到 `Anchor Transit`，将物体推入入口，展示整体传送。
-4. 切到 `Compound Gate`，展示二格复合体通过一格传送门。
-5. 切到 `Reassembly`，把两个相邻同材质物体用 `C` 重组。
-6. 切到 `Phase Loom`，说明“传送 -> 拆分 -> 双目标”的综合解法。
-7. 打开 `Level Workbench`，运行全部关卡验证。
-8. 在 Test Runner 中运行 `CompoundBox.EditModeTests`，展示 6/6 通过。
+1. `First Push`：展示移动、推动、目标和出口。
+2. `Split Decision`：展示全拆分和独立配送。
+3. `Anchor Transit`：展示双向传送。
+4. `Compound Gate`：展示多格复合体通过单格传送门。
+5. `Reassembly`：展示相邻同材质重组。
+6. `Precision Cut`：展示连接图和精确切割。
+7. `Rotation Vault`：展示旋转和复合目标。
+8. `Portable Gate`：展示可移动传送节点和双向传送。
+9. 打开 `Level Workbench`，展示关卡验证、指标分析和标准解回放。
+10. 在 Test Runner 中运行 `CompoundBox.EditModeTests`，展示 35/35 通过。
 
 ## 2. 简历项目描述
 
 ### 中文版
 
-独立开发 Unity 2D 网格解谜 Demo，围绕“多格复合实体 + 网格传送门 + 拆分/重组”设计并实现 6 个递进式关卡。采用规则层与表现层分离架构，实现确定性推挤链、锚点式整体传送、Command 模式撤销/重做、通用 FSM、ScriptableObject 关卡配置、JSON 存档推进、对象池和程序化白盒音画表现。编写编辑器关卡工作台与 11 个自动化测试，使用同一套生产规则回放全部标准解法。
+独立开发 Unity 2D 网格解谜作品集项目，围绕多格复合实体、双向传送门、拆分、精确切割和重组设计 12 个递进关卡。采用逻辑网格与表现层分离架构，实现原子推挤链、不规则复合体形状保持传送、可移动传送节点、Command/Memento 撤销重做、ScriptableObject 关卡配置、New Input System、JSON 存档、对象池和 35 个自动化测试，并使用生产规则验证全部标准解。
 
 ### English version
 
-Built a Unity 2D grid puzzle vertical slice around compound polyomino entities, splitting/recombination, and grid portals. Implemented deterministic push chains, anchor-based whole-entity teleportation, command-pattern undo/redo, finite state machines, ScriptableObject level content, JSON save progression, object pooling, procedural whitebox visuals/audio, and automated solution replay for every bundled level.
+Built a Unity 2D grid-puzzle portfolio project around compound polyomino entities, bidirectional portals, splitting, precision cutting, recombination, rotation, and 12 progression levels. Implemented deterministic transactional movement, shape-preserving teleportation, command-based undo/redo, ScriptableObject level content, New Input System support, JSON progression, object pooling, editor validation tools, and 35 automated EditMode tests.
 
-## 3. 面试时重点讲什么
+## 3. 面试重点
 
-### 规则问题
+### 规则模拟
 
-为什么多格实体的传送必须使用锚点，而不是逐格传送：
+- 为什么逻辑状态不能直接使用 Transform。
+- 为什么移动必须先收集提案、统一验证、最后提交。
+- 为什么多格实体要保存 CellState 和 Connection，而不是只保存一个覆盖范围。
 
-- 逐格传送会剪切复合体
-- 每个格子独立传送会产生顺序依赖
-- 锚点整体传送保证形状稳定，方便关卡设计和玩家建立心智模型
+### 传送系统
 
-### 架构问题
+- 为什么传送门需要 PortalPair 和 PortalLink 两层。
+- 如何支持双向传送。
+- 如何让不规则复合体传送后不变形、不覆盖传送门格。
+- 如何处理可移动传送节点。
 
-为什么先模拟再提交：
+### 状态管理
 
-- 推挤链可能包含多个实体
-- 传送可能让物体跨越棋盘
-- 只有所有候选位置验证成功后写回，才能避免脏状态
+- 为什么使用 Command 保存操作语义。
+- 为什么用 Memento 保证复杂操作 Undo/Redo 正确。
+- 这种方案的内存代价是什么。
+- 如何演进为反向 Command 或 Delta 历史。
 
-### Command 与状态管理
+### 数据驱动
 
-为什么使用 Command 而不是只保存状态快照：
+- 为什么 ScriptableObject 和运行时 POCO 分开。
+- LevelParser、LevelAudit、GridSession 如何复用。
+- 如何让编辑器、运行时和测试共用同一套规则。
 
-- Command 同时保留操作语义，可生成历史标签、回放和后续联机同步
-- Memento 负责恢复精确状态，避免为每种操作单独编写反向推导
-- Undo/Redo 只管理两个栈，输入层不需要知道具体玩法类型
+### 工程化
 
-为什么使用 FSM：
+- 如何使用 New Input System 隔离输入。
+- 如何用对象池减少 GC。
+- 如何通过标准解自动回放保证关卡回归。
+- 当前架构有哪些不足，下一步如何拆分。
 
-- 玩家、关卡和机关有明确的生命周期
-- 状态迁移可以作为动画和输入门禁的统一来源
-- 新状态只需要添加行为和迁移，不需要继续扩展布尔条件
+## 4. 当前可继续深化的方向
 
-### 工具问题
+- 拆分 Core、Presentation、Editor 程序集。
+- 建立可重绑定的 InputActionAsset。
+- 制作可视化网格关卡编辑器。
+- 引入 BFS/IDA* 求解器和最短解验证。
+- 增加中途存档、原子写入和版本迁移。
+- 扩展到 18-24 关并增加传送门过滤和方向关系。
+- 用正式动画、粒子、镜头反馈和 UI Toolkit 替换当前表现层。
 
-为什么把解法记录进关卡数据：
+## 5. 推荐展示素材
 
-- 关卡是生产数据，不只是截图素材
-- 规则修改后，自动回放可以立即发现关卡失效
-- 编辑器工具、运行时和测试共用同一套解析与模拟代码
+- `Assets/Sokoban/Art/Generated/portfolio-main-menu.png`
+- `Assets/Sokoban/Art/Generated/portfolio-assembly.png`
+- `Assets/Sokoban/Art/Generated/portfolio-alloy.png`
+- `Assets/Sokoban/Art/Generated/portfolio-structure.png`
+- `Assets/Sokoban/Art/Generated/portfolio-foundry-ai.png`
 
-## 4. 可继续深化的方向
+完整技术细节见：
 
-- 增加 12-18 关，引入传送门颜色过滤
-- 制作 3 种具有方向关系的复合物
-- 添加镜头震动、粒子、残影和切换动画
-- 用 Tilemap 和正式美术替换白盒
-- 加入关卡编辑器和本地关卡分享格式
-- 添加最短步数统计、通关评级和提示系统
-
-## 5. 展示素材
-
-- `Assets/Sokoban/Art/Generated/runtime-hud.png`
-- `Assets/Sokoban/Art/Generated/phase-loom-preview.png`
-
-建议在简历或作品集页面同时放置“第一关教学”和“第六关全机制组合”两张图，避免只展示完成面板而看不到玩法。
+- `Docs/TechnicalPortfolioReport.md`
+- `Docs/Architecture.md`

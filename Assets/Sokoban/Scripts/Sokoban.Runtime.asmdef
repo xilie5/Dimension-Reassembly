@@ -1,7 +1,9 @@
 {
   "name": "CompoundBox.Runtime",
   "rootNamespace": "CompoundBox",
-  "references": [],
+  "references": [
+    "Unity.InputSystem"
+  ],
   "includePlatforms": [],
   "excludePlatforms": [],
   "allowUnsafeCode": false,

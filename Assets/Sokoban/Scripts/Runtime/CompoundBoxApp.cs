@@ -17,6 +17,7 @@ namespace CompoundBox
         private BoardView boardView;
         private GameHud hud;
         private ProceduralAudio audioService;
+        private CompoundBoxInput input;
         private GridSession session;
         private int levelIndex;
         private float completeAt = -1f;
@@ -71,6 +72,7 @@ namespace CompoundBox
             audioService = new ProceduralAudio(gameObject);
             audioService.ConfigureTheme(artTheme);
             audioService.Muted = SaveService.Data.audioMuted;
+            input = new CompoundBoxInput();
             var startLevel = RequestedStartLevel >= 0
                 ? RequestedStartLevel
                 : SaveService.Data.highestUnlockedLevel - 1;
@@ -81,16 +83,19 @@ namespace CompoundBox
             levelFlow.Change(LevelFlowState.MainMenu);
         }
 
+        private void OnDestroy()
+        {
+            input?.Dispose();
+        }
+
         private void Update()
         {
-            levelFlow.Tick(Time.unscaledDeltaTime);
-            playerState.Tick(Time.unscaledDeltaTime);
             if (playerState.CurrentState != PlayerActionState.Idle && Time.unscaledTime >= playerStateUntil)
             {
                 playerState.Change(PlayerActionState.Idle);
             }
 
-            if (Input.GetKeyDown(KeyCode.M))
+            if (input.MutePressed)
             {
                 audioService.Muted = !audioService.Muted;
                 SaveService.SetAudioMuted(audioService.Muted);
@@ -99,12 +104,12 @@ namespace CompoundBox
 
             if (hud.IsMainMenuOpen)
             {
-                if (Input.GetKeyDown(KeyCode.L))
+                if (input.LevelSelectPressed)
                 {
                     hud.ToggleLevelSelect();
                 }
 
-                if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space))
+                if (input.ConfirmPressed)
                 {
                     ContinueFromMenu();
                 }
@@ -112,66 +117,62 @@ namespace CompoundBox
                 return;
             }
 
-            if (Input.GetKeyDown(KeyCode.N) || Input.GetKeyDown(KeyCode.Tab))
+            if (input.AdvancePressed)
             {
                 TryAdvanceLevel();
                 return;
             }
 
-            if (Input.GetKeyDown(KeyCode.L))
+            if (input.LevelSelectPressed)
             {
                 hud.ToggleLevelSelect();
                 audioService.Play(AudioCue.Ui);
                 return;
             }
 
-            if (Input.GetKeyDown(KeyCode.LeftBracket))
+            if (input.PreviousLevelPressed)
             {
                 LoadLevel((levelIndex - 1 + levels.Count) % levels.Count);
                 audioService.Play(AudioCue.Ui);
                 return;
             }
 
-            if (Input.GetKeyDown(KeyCode.RightBracket))
+            if (input.NextLevelPressed)
             {
                 TryAdvanceLevel();
                 return;
             }
 
-            if (Input.GetKeyDown(KeyCode.R))
+            if (input.RestartPressed)
             {
                 ApplyResolution(session.Restart(), true);
                 return;
             }
 
-            var controlHeld =
-                Input.GetKey(KeyCode.LeftControl) ||
-                Input.GetKey(KeyCode.RightControl);
-            var shiftHeld =
-                Input.GetKey(KeyCode.LeftShift) ||
-                Input.GetKey(KeyCode.RightShift);
+            var controlHeld = input.ControlHeld;
+            var shiftHeld = input.ShiftHeld;
 
-            if (Input.GetKeyDown(KeyCode.Z) && !controlHeld && !shiftHeld)
+            if (input.UndoPressed && !controlHeld && !shiftHeld)
             {
                 ApplyResolution(session.Undo(), true);
                 return;
             }
 
-            if (controlHeld && !shiftHeld && Input.GetKeyDown(KeyCode.Z))
+            if (controlHeld && !shiftHeld && input.UndoPressed)
             {
                 ApplyResolution(session.Undo(), true);
                 return;
             }
 
             if (controlHeld &&
-                (Input.GetKeyDown(KeyCode.Y) ||
-                 (shiftHeld && Input.GetKeyDown(KeyCode.Z))))
+                (input.RedoPressed ||
+                 (shiftHeld && input.UndoPressed)))
             {
                 ApplyResolution(session.Redo(), true);
                 return;
             }
 
-            if (Input.GetKeyDown(KeyCode.X))
+            if (input.SplitPressed)
             {
                 if (!CanAcceptGameplayInput())
                 {
@@ -182,7 +183,7 @@ namespace CompoundBox
                 return;
             }
 
-            if (Input.GetKeyDown(KeyCode.V))
+            if (input.PrecisionCutPressed)
             {
                 if (!CanAcceptGameplayInput())
                 {
@@ -193,7 +194,7 @@ namespace CompoundBox
                 return;
             }
 
-            if (Input.GetKeyDown(KeyCode.C))
+            if (input.RecombinePressed)
             {
                 if (!CanAcceptGameplayInput())
                 {
@@ -204,7 +205,7 @@ namespace CompoundBox
                 return;
             }
 
-            if (Input.GetKeyDown(KeyCode.Q))
+            if (input.RotateLeftPressed)
             {
                 if (!CanAcceptGameplayInput())
                 {
@@ -215,7 +216,7 @@ namespace CompoundBox
                 return;
             }
 
-            if (Input.GetKeyDown(KeyCode.E))
+            if (input.RotateRightPressed)
             {
                 if (!CanAcceptGameplayInput())
                 {
@@ -226,7 +227,7 @@ namespace CompoundBox
                 return;
             }
 
-            if (TryReadDirection(out var direction))
+            if (input.TryReadDirection(out var direction))
             {
                 if (!CanAcceptGameplayInput())
                 {
@@ -236,7 +237,7 @@ namespace CompoundBox
                 ApplyResolution(session.Move(direction));
             }
 
-            if (CanAcceptGameplayInput() && TryReadHeldDirection(out var heldDirection))
+            if (CanAcceptGameplayInput() && input.TryReadHeldDirection(out var heldDirection))
             {
                 boardView.ShowMovePreview(session.State, heldDirection);
             }
@@ -429,64 +430,5 @@ namespace CompoundBox
                    !hud.IsMainMenuOpen;
         }
 
-        private static bool TryReadDirection(out GridDirection direction)
-        {
-            if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))
-            {
-                direction = GridDirection.Up;
-                return true;
-            }
-
-            if (Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow))
-            {
-                direction = GridDirection.Right;
-                return true;
-            }
-
-            if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow))
-            {
-                direction = GridDirection.Down;
-                return true;
-            }
-
-            if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
-            {
-                direction = GridDirection.Left;
-                return true;
-            }
-
-            direction = GridDirection.None;
-            return false;
-        }
-
-        private static bool TryReadHeldDirection(out GridDirection direction)
-        {
-            if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))
-            {
-                direction = GridDirection.Up;
-                return true;
-            }
-
-            if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
-            {
-                direction = GridDirection.Right;
-                return true;
-            }
-
-            if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow))
-            {
-                direction = GridDirection.Down;
-                return true;
-            }
-
-            if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
-            {
-                direction = GridDirection.Left;
-                return true;
-            }
-
-            direction = GridDirection.None;
-            return false;
-        }
     }
 }

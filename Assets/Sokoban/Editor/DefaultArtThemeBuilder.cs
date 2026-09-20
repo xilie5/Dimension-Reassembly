@@ -15,15 +15,8 @@ namespace CompoundBox.Editor
         {
             Directory.CreateDirectory(ResourcesRoot);
 
-            var panel = LoadTexture(KenneyRoot + "/UI/Blue/button_rectangle_border.png");
             var button = LoadTexture(KenneyRoot + "/UI/Blue/button_rectangle_depth_flat.png");
             var buttonHover = LoadTexture(KenneyRoot + "/UI/Blue/button_rectangle_gradient.png");
-            var chapterIcon = LoadSprite(KenneyRoot + "/Icons/White/menuGrid.png");
-            var lockedIcon = LoadSprite(KenneyRoot + "/Icons/White/locked.png");
-            var undoIcon = LoadSprite(KenneyRoot + "/Icons/White/arrowLeft.png");
-            var redoIcon = LoadSprite(KenneyRoot + "/Icons/White/arrowRight.png");
-            var audioOnIcon = LoadSprite(KenneyRoot + "/Icons/White/audioOn.png");
-            var audioOffIcon = LoadSprite(KenneyRoot + "/Icons/White/audioOff.png");
             var click = AssetDatabase.LoadAssetAtPath<AudioClip>(KenneyRoot + "/Audio/click_001.ogg");
             var confirm = AssetDatabase.LoadAssetAtPath<AudioClip>(KenneyRoot + "/Audio/confirmation_001.ogg");
             var error = AssetDatabase.LoadAssetAtPath<AudioClip>(KenneyRoot + "/Audio/error_001.ogg");
@@ -63,15 +56,8 @@ namespace CompoundBox.Editor
                     Hex("#EF7388"),
                     Hex("#A88BEA")
                 },
-                panel,
                 button,
                 buttonHover,
-                chapterIcon,
-                lockedIcon,
-                undoIcon,
-                redoIcon,
-                audioOnIcon,
-                audioOffIcon,
                 click,
                 confirm,
                 error,

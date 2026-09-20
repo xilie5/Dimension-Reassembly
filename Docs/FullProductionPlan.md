@@ -168,6 +168,12 @@ Completed
 - 确定性状态模拟
 - Command + Memento
 
+### 输入
+
+- New Input System
+- 键盘和手柄动作映射
+- `CompoundBoxInput` 隔离应用层与输入设备
+
 ### 测试
 
 - Unity Test Framework
@@ -190,7 +196,9 @@ P0：
 
 P0：
 
-- 程序化白盒
+- Foundry AI 主题素材
+- Kenney CC0 UI 与音效
+- 程序化白盒备用表现
 
 正式版本：
 
@@ -415,12 +423,12 @@ CompoundBox.Tests
 
 ## 10. 当前优先级
 
-1. 完成主界面 UI
-2. 将 Level Workbench 改成 Catalog-first
-3. 增加关卡创建和排序工具
-4. 引入 ArtThemeAsset
-5. 替换玩家和 Matter 白盒视觉
-6. 再替换静态棋盘和 HUD
+1. 拆分 Core、Presentation、Editor 程序集
+2. 拆分 CompoundBoxApp 的输入、流程和 UI 职责
+3. 制作可视化网格关卡编辑器
+4. 将输入迁移为可重绑定的 InputActionAsset
+5. 统一关卡正式来源并移除重复配置
+6. 增加中途存档、原子写入和求解器
 
 ## 11. 完成定义
 
